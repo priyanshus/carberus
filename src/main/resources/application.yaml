@@ -1,0 +1,16 @@
+server:
+  port: 10001
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: carberus
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/admin?retryWrites=true&w=majority
+      database: carberus
+  
+logging:
+  level:
+    org.springframework.security: trace
