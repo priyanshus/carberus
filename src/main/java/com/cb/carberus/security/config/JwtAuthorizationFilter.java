@@ -1,28 +1,34 @@
 package com.cb.carberus.security.config;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.cb.carberus.auth.service.AuthUserDetailsService;
+import com.cb.carberus.config.error.AuthenticationFailedException;
+import com.cb.carberus.config.error.UserNotFoundException;
 import com.cb.carberus.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Map;
 
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private AuthUserDetailsService userDetailsService;
 
-    public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
-        this.jwtUtil = jwtUtil;
+    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -30,36 +36,35 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        String token = null;
         String path = request.getServletPath();
 
         if (path.equals("/") || path.equals("/login") || path.equals("/signup")) {
-            System.out.println("🔐🔐Filtering login call");
             filterChain.doFilter(request, response);
             return;
         }
 
-        if(Collections.list(request.getHeaderNames()).contains("Authorization")) {
-            var token = extractToken(request);
-            System.out.println(token);
-            filterChain.doFilter(request, response);
+
+        token = extractToken(request);
+
+        assert token != null;
+        if (token.isEmpty()) {
+            throw new AuthenticationFailedException();
         }
 
-//        String token = extractToken(request);
-//        String email = jwtUtil.extractUsername(token);
-//        List<String> roles = jwtUtil.extractClaim(token, claims -> claims.get("roles", ArrayList.class));
-//        System.out.println(roles);
-//        Roles role = Roles.valueOf(roles.getFirst());
-//
-//        JwtUserPrincipal principal = new JwtUserPrincipal(email, role);
-//
-//        UsernamePasswordAuthenticationToken authentication =
-//                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-//
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Map<String, Object> decodeJwt  = JwtUtil.validateToken(token);
+        String email = decodeJwt.get("subject").toString();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        filterChain.doFilter(request, response);
     }
 
     private String extractToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }

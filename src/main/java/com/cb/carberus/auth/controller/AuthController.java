@@ -1,40 +1,41 @@
 package com.cb.carberus.auth.controller;
 
+import com.cb.carberus.auth.dto.CurrentUserResponseDTO;
 import com.cb.carberus.auth.dto.LoginRequestDTO;
 import com.cb.carberus.auth.service.AuthService;
-import com.cb.carberus.security.jwt.JwtUtil;
-import jakarta.servlet.http.Cookie;
+import com.cb.carberus.auth.validator.LoginRequestValidator;
+import com.cb.carberus.config.error.AuthenticationFailedException;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 public class AuthController {
-    private AuthService authService;
+    private final AuthService authService;
 
     @Autowired
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
+
     @PostMapping("/login")
-    public ResponseEntity<Void> postLogin(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
-        try {
-            String jwt = authService.isValidCredentials(loginRequestDTO);
-            response.addHeader("Authorization", "Bearer " + jwt);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<Void> postLogin(@Valid @RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
+        String token = authService.authenticate(loginRequestDTO);
+        response.addHeader("Authorization", "Bearer " + token);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserResponseDTO> getMe() {
+        CurrentUserResponseDTO user = authService.getCurrentUser();
+        return ResponseEntity.ok(user);
     }
 
 }
