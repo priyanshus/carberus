@@ -1,10 +1,14 @@
-package com.cb.carberus.controllers;
+package com.cb.carberus.auth.controllers;
 
 import com.cb.carberus.auth.controller.AuthController;
 import com.cb.carberus.auth.dto.LoginRequestDTO;
 import com.cb.carberus.auth.service.AuthService;
 import com.cb.carberus.auth.service.AuthUserDetailsService;
+import com.cb.carberus.config.UserContext;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,6 +30,8 @@ public class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+    @MockitoBean
+    private UserContext userContext;
 
     @Autowired
     private MockMvc mockMvc;

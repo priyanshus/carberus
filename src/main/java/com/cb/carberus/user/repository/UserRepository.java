@@ -1,6 +1,6 @@
-package com.cb.carberus.repository.user;
+package com.cb.carberus.user.repository;
 
-import com.cb.carberus.model.user.User;
+import com.cb.carberus.user.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

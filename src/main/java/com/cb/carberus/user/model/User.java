@@ -1,5 +1,6 @@
-package com.cb.carberus.model.user;
+package com.cb.carberus.user.model;
 
+import com.cb.carberus.constants.Role;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,5 +16,5 @@ public class User {
     private String email;
     private String password;
     private LocalDateTime createdAt;
-    private List<String> roles;
+    private List<Role> roles;
 }

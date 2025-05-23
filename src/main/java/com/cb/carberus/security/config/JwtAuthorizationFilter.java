@@ -1,35 +1,41 @@
 package com.cb.carberus.security.config;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.cb.carberus.auth.service.AuthUserDetailsService;
+import com.cb.carberus.config.UserContext;
 import com.cb.carberus.config.error.AuthenticationFailedException;
-import com.cb.carberus.config.error.UserNotFoundException;
+import com.cb.carberus.constants.Role;
 import com.cb.carberus.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tomcat.websocket.AuthenticationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Autowired
     private AuthUserDetailsService userDetailsService;
 
-    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService) {
+    @Autowired
+    private UserContext userContext;
+
+    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService, UserContext userContext) {
         this.userDetailsService = userDetailsService;
+        this.userContext = userContext;
     }
 
     @Override
@@ -44,12 +50,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
-
         token = extractToken(request);
-
-        assert token != null;
-        if (token.isEmpty()) {
+        if (token == null || token.isEmpty()) {
             throw new AuthenticationFailedException();
         }
 
@@ -60,11 +62,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        List<Role> userRoles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(Role::valueOf)
+                .collect(Collectors.toList());
+        userContext.setRoles(userRoles);
         filterChain.doFilter(request, response);
     }
 
     private String extractToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("authorization");
+        String authHeader = request.getHeader("Authorization");
+        log.debug("Authorization header: {}", authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }

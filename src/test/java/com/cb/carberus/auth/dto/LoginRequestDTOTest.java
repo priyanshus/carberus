@@ -1,6 +1,5 @@
-package com.cb.carberus.dto;
+package com.cb.carberus.auth.dto;
 
-import com.cb.carberus.auth.dto.LoginRequestDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

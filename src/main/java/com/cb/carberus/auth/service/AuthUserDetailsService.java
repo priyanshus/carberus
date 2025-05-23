@@ -1,10 +1,10 @@
 package com.cb.carberus.auth.service;
 
 import com.cb.carberus.config.error.UserNotFoundException;
-import com.cb.carberus.repository.user.UserRepository;
+import com.cb.carberus.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,14 +27,14 @@ public class AuthUserDetailsService implements UserDetailsService {
                 .orElseThrow(UserNotFoundException::new);
 
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
+                .map(role -> new SimpleGrantedAuthority(role.name()))
                 .toList();
 
         if (authorities.isEmpty()) {
             throw new UserNotFoundException();
         }
 
-        return new org.springframework.security.core.userdetails.User(
+        return new User(
                 user.getEmail(),
                 user.getPassword(),
                 authorities

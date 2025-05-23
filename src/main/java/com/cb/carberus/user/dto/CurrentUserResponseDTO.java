@@ -1,4 +1,4 @@
-package com.cb.carberus.auth.dto;
+package com.cb.carberus.user.dto;
 
 import lombok.Data;
 
