@@ -13,6 +13,8 @@ import java.util.List;
 public class User {
     @Id
     private String id;
+    private String firstName;
+    private String lastName;
     private String email;
     private String password;
     private LocalDateTime createdAt;

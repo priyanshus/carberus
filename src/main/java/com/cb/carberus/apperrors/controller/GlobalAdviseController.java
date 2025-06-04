@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.cb.carberus.apperrors.dto.ErrorResponseDTO;
 import com.cb.carberus.config.error.AuthenticationFailedException;
 import com.cb.carberus.config.error.UnauthorizedAccessException;
+import com.cb.carberus.config.error.UserAlreadyExistException;
 import com.cb.carberus.config.error.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,11 @@ public class GlobalAdviseController {
 
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<ErrorResponseDTO> unauthorizedAccess(UnauthorizedAccessException exception) {
+        return new ResponseEntity<>(new ErrorResponseDTO(exception.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UserAlreadyExistException.class)
+    public ResponseEntity<ErrorResponseDTO> unauthorizedAccess(UserAlreadyExistException exception) {
         return new ResponseEntity<>(new ErrorResponseDTO(exception.getMessage()), HttpStatus.FORBIDDEN);
     }
 }

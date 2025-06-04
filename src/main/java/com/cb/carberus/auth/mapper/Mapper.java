@@ -1,5 +1,6 @@
 package com.cb.carberus.auth.mapper;
 
+import com.cb.carberus.user.dto.AddUserDTO;
 import com.cb.carberus.user.dto.CurrentUserResponseDTO;
 import com.cb.carberus.auth.dto.SignupRequestDTO;
 import com.cb.carberus.constants.Role;
@@ -29,6 +30,16 @@ public class Mapper {
         return currentUserResponseDTO;
     }
 
+    public static User toUser(AddUserDTO dto, BCryptPasswordEncoder encoder) {
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPassword(encoder.encode(dto.getPassword()));
+        user.setCreatedAt(LocalDateTime.now());
+        return user;
+    }
+
     private static List<Role> toEnumRoles(List<String> roles) {
         return roles.stream()
                 .map(role -> Role.valueOf(role.toUpperCase()))
@@ -40,4 +51,6 @@ public class Mapper {
                 .map(Role::name)
                 .collect(Collectors.toList());
     };
+
+
 }
