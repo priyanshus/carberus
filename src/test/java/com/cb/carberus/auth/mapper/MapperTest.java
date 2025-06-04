@@ -2,7 +2,7 @@ package com.cb.carberus.auth.mapper;
 
 import com.cb.carberus.auth.dto.SignupRequestDTO;
 import com.cb.carberus.constants.Role;
-import com.cb.carberus.user.dto.CurrentUserResponseDTO;
+import com.cb.carberus.user.dto.UserResponseDTO;
 import com.cb.carberus.user.model.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +42,7 @@ public class MapperTest {
         user.setCreatedAt(java.time.LocalDateTime.now());
         user.setRoles(List.of(Role.STUDENT, Role.ADMIN));
 
-        CurrentUserResponseDTO dto = Mapper.toCurrentUserResponse(user);
+        UserResponseDTO dto = Mapper.toCurrentUserResponse(user);
 
         Assertions.assertEquals("some-id", dto.getId());
         Assertions.assertEquals("user@example.com", dto.getEmail());

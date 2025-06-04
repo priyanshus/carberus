@@ -1,10 +1,9 @@
-package com.cb.carberus.service;
+package com.cb.carberus.auth.service;
 
 import com.cb.carberus.auth.dto.LoginRequestDTO;
-import com.cb.carberus.auth.service.AuthService;
-import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.config.error.AuthenticationFailedException;
+import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
+import com.cb.carberus.security.jwt.JwtUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -30,6 +28,9 @@ public class AuthServiceTest {
 
     @Mock
     UserContext userContext;
+
+    @Mock
+    JwtUtil jwtUtil;
 
     @InjectMocks
     AuthService authService;
@@ -51,12 +52,13 @@ public class AuthServiceTest {
 
         when(userDetails.getPassword()).thenReturn("encodedPassword");
         when(passwordEncoder.matches(rawPassword, "encodedPassword")).thenReturn(true);
+        when(jwtUtil.generateToken(userDetails)).thenReturn("some-token");
 
         // Act
         String jwtToken = authService.authenticate(mockLoginRequest);
 
         // Assert
-        Assertions.assertNotNull(jwtToken);
+        Assertions.assertEquals("some-token", jwtToken);
     }
 
     @Test

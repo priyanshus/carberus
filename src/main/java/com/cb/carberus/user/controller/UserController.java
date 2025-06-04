@@ -1,7 +1,8 @@
 package com.cb.carberus.user.controller;
 
 import com.cb.carberus.user.dto.AddUserDTO;
-import com.cb.carberus.user.dto.CurrentUserResponseDTO;
+import com.cb.carberus.user.dto.UpdateUserRoleDTO;
+import com.cb.carberus.user.dto.UserResponseDTO;
 import com.cb.carberus.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<CurrentUserResponseDTO> getMe() {
-        CurrentUserResponseDTO user = userService.getCurrentUser();
+    public ResponseEntity<UserResponseDTO> getMe() {
+        UserResponseDTO user = userService.getCurrentUser();
         return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/deleteUser/{userId}")
+    @DeleteMapping("/users/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
         boolean deleted = userService.deleteUser(userId);
         return deleted
@@ -30,14 +31,29 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<CurrentUserResponseDTO[]> getUsers() {
+    public ResponseEntity<UserResponseDTO[]> getUsers() {
         var users =  userService.getUsers();
         return ResponseEntity.ok(users);
     }
 
-    @PostMapping("/user")
-    public ResponseEntity<Void> addUser(AddUserDTO addUserDTO) {
+    @PostMapping("/users")
+    public ResponseEntity<Void> addUser(@RequestBody AddUserDTO addUserDTO) {
         userService.addUser(addUserDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable String userId) {
+        var user = userService.getUser(userId);
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<Void> updateUser(
+            @PathVariable String userId,
+            @RequestBody UpdateUserRoleDTO request
+    ) {
+        userService.updateUserRole(userId, request.getRole());
+        return ResponseEntity.noContent().build();
     }
 }

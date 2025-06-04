@@ -1,13 +1,13 @@
 package com.cb.carberus.user.service;
 
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.config.error.UnauthorizedAccessException;
-import com.cb.carberus.config.error.UserAlreadyExistException;
 import com.cb.carberus.constants.Role;
+import com.cb.carberus.errorHandler.error.UnauthorizedAccessException;
+import com.cb.carberus.errorHandler.error.UserAlreadyExistException;
+import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.user.dto.AddUserDTO;
-import com.cb.carberus.user.dto.CurrentUserResponseDTO;
+import com.cb.carberus.user.dto.UserResponseDTO;
 import com.cb.carberus.auth.mapper.Mapper;
-import com.cb.carberus.config.error.UserNotFoundException;
 import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,12 @@ public class UserService {
         this.encoder = encoder;
     }
 
-    public CurrentUserResponseDTO getCurrentUser() {
+    public UserResponseDTO getUser(String userId) {
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return Mapper.toCurrentUserResponse(user);
+    }
+
+    public UserResponseDTO getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var userDetails = (UserDetails) authentication.getPrincipal();
         var email = userDetails.getUsername();
@@ -39,13 +44,13 @@ public class UserService {
         return Mapper.toCurrentUserResponse(user);
     }
 
-    public CurrentUserResponseDTO[] getUsers() {
+    public UserResponseDTO[] getUsers() {
         List<User> users = userRepository.findAll();
 
 
         return users.stream()
                 .map(Mapper::toCurrentUserResponse)
-                .toArray(CurrentUserResponseDTO[]::new);
+                .toArray(UserResponseDTO[]::new);
     }
 
     public void addUser(AddUserDTO addUserDTO) {
@@ -63,6 +68,13 @@ public class UserService {
             userRepository.delete(user);
             return true;
         }
+
         throw new UnauthorizedAccessException();
+    }
+
+    public void updateUserRole(String userId, Role role) {
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        user.setRoles(List.of(role));
+        userRepository.save(user);
     }
 }

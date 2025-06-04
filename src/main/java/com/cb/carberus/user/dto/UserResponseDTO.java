@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class CurrentUserResponseDTO {
+public class UserResponseDTO {
     private String id;
     private String email;
     private LocalDateTime createdAt;

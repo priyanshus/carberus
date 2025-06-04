@@ -1,6 +1,6 @@
 package com.cb.carberus.security.config;
 
-import com.cb.carberus.apperrors.dto.ErrorResponseDTO;
+import com.cb.carberus.errorHandler.dto.ErrorResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

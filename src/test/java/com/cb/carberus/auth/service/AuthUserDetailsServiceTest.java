@@ -1,9 +1,8 @@
-package com.cb.carberus.service;
+package com.cb.carberus.auth.service;
 
-import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.config.error.UserNotFoundException;
 import com.cb.carberus.constants.Role;
+import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;

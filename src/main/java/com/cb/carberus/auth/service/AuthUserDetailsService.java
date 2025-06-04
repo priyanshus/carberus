@@ -1,6 +1,6 @@
 package com.cb.carberus.auth.service;
 
-import com.cb.carberus.config.error.UserNotFoundException;
+import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

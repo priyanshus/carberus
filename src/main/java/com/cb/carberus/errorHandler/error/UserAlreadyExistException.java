@@ -1,4 +1,4 @@
-package com.cb.carberus.config.error;
+package com.cb.carberus.errorHandler.error;
 
 public class UserAlreadyExistException extends RuntimeException{
     public UserAlreadyExistException() {

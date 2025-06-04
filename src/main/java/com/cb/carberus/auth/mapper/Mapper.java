@@ -1,7 +1,7 @@
 package com.cb.carberus.auth.mapper;
 
 import com.cb.carberus.user.dto.AddUserDTO;
-import com.cb.carberus.user.dto.CurrentUserResponseDTO;
+import com.cb.carberus.user.dto.UserResponseDTO;
 import com.cb.carberus.auth.dto.SignupRequestDTO;
 import com.cb.carberus.constants.Role;
 import com.cb.carberus.user.model.User;
@@ -21,8 +21,8 @@ public class Mapper {
         return user;
     }
 
-    public static CurrentUserResponseDTO toCurrentUserResponse(User user) {
-        CurrentUserResponseDTO currentUserResponseDTO = new CurrentUserResponseDTO();
+    public static UserResponseDTO toCurrentUserResponse(User user) {
+        UserResponseDTO currentUserResponseDTO = new UserResponseDTO();
         currentUserResponseDTO.setEmail(user.getEmail());
         currentUserResponseDTO.setRoles(toStringRoles(user.getRoles()));
         currentUserResponseDTO.setId(user.getId());

@@ -1,4 +1,4 @@
-package com.cb.carberus.config.error;
+package com.cb.carberus.errorHandler.error;
 
 import org.springframework.security.core.AuthenticationException;
 

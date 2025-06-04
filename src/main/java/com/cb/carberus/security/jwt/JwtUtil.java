@@ -5,8 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.cb.carberus.config.error.AuthenticationFailedException;
-import org.apache.tomcat.websocket.AuthenticationException;
+import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ public class JwtUtil {
     private final static String SECRET_KEY = "your-256-bit";
 
 
-    public static String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -36,7 +35,7 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC256(SECRET_KEY));
     }
 
-    public static Map<String, Object> validateToken(String token) {
+    public Map<String, Object> validateToken(String token) {
         if (token.isEmpty()) {
             throw new AuthenticationFailedException();
         }

@@ -2,8 +2,8 @@ package com.cb.carberus.security.config;
 
 import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.config.error.AuthenticationFailedException;
 import com.cb.carberus.constants.Role;
+import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
 import com.cb.carberus.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,9 +34,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     private UserContext userContext;
 
-    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService, UserContext userContext) {
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService, UserContext userContext, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.userContext = userContext;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -56,7 +60,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             throw new AuthenticationFailedException();
         }
 
-        Map<String, Object> decodeJwt  = JwtUtil.validateToken(token);
+        Map<String, Object> decodeJwt  = jwtUtil.validateToken(token);
         String email = decodeJwt.get("subject").toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         UsernamePasswordAuthenticationToken authToken =

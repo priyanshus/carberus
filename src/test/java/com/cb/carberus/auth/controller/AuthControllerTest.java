@@ -1,14 +1,12 @@
-package com.cb.carberus.auth.controllers;
+package com.cb.carberus.auth.controller;
 
-import com.cb.carberus.auth.controller.AuthController;
 import com.cb.carberus.auth.dto.LoginRequestDTO;
 import com.cb.carberus.auth.service.AuthService;
 import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.UserContext;
+import com.cb.carberus.security.jwt.JwtUtil;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,8 +28,12 @@ public class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
     @MockitoBean
     private UserContext userContext;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,6 +49,7 @@ public class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"a@a.com\", \"password\":\"tests\"}"))
                 .andExpect(status().isOk())
+                .andExpect(header().string(org.springframework.http.HttpHeaders.SET_COOKIE, Matchers.containsString("token=")))
                 .andExpect(header().string("Authorization", "Bearer " + token));
     }
 

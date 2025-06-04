@@ -1,4 +1,4 @@
-package com.cb.carberus.apperrors.dto;
+package com.cb.carberus.errorHandler.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

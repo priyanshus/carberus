@@ -1,12 +1,10 @@
-package com.cb.carberus.apperrors.controller;
+package com.cb.carberus.errorHandler.controller;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.cb.carberus.apperrors.dto.ErrorResponseDTO;
-import com.cb.carberus.config.error.AuthenticationFailedException;
-import com.cb.carberus.config.error.UnauthorizedAccessException;
-import com.cb.carberus.config.error.UserAlreadyExistException;
-import com.cb.carberus.config.error.UserNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
+import com.cb.carberus.errorHandler.dto.ErrorResponseDTO;
+import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
+import com.cb.carberus.errorHandler.error.UnauthorizedAccessException;
+import com.cb.carberus.errorHandler.error.UserAlreadyExistException;
+import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,6 +36,6 @@ public class GlobalAdviseController {
 
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<ErrorResponseDTO> unauthorizedAccess(UserAlreadyExistException exception) {
-        return new ResponseEntity<>(new ErrorResponseDTO(exception.getMessage()), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(new ErrorResponseDTO(exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
