@@ -6,4 +6,9 @@ public enum Role {
     PARENT,
     GUEST,
     ADMIN,
+    VIEWER,
+    TESTER,
+    TESTMANAGER
 }
+
+

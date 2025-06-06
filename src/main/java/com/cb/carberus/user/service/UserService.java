@@ -2,9 +2,9 @@ package com.cb.carberus.user.service;
 
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.Role;
-import com.cb.carberus.errorHandler.error.UnauthorizedAccessException;
-import com.cb.carberus.errorHandler.error.UserAlreadyExistException;
-import com.cb.carberus.errorHandler.error.UserNotFoundException;
+import com.cb.carberus.errorHandler.error.*;
+import com.cb.carberus.errorHandler.model.DomainErrorCode;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.user.dto.AddUserDTO;
 import com.cb.carberus.user.dto.UserResponseDTO;
 import com.cb.carberus.auth.mapper.Mapper;
@@ -47,6 +47,9 @@ public class UserService {
     public UserResponseDTO[] getUsers() {
         List<User> users = userRepository.findAll();
 
+        if (users.isEmpty()) {
+            throw new DomainException(DomainErrorCode.NO_USERS_FOUND);
+        }
 
         return users.stream()
                 .map(Mapper::toCurrentUserResponse)
@@ -55,7 +58,7 @@ public class UserService {
 
     public void addUser(AddUserDTO addUserDTO) {
         if (userRepository.findByEmail(addUserDTO.getEmail()).isPresent()) {
-            throw new UserAlreadyExistException();
+            throw new DomainException(DomainErrorCode.EMAIL_ALREADY_TAKEN);
         }
 
         User user = Mapper.toUser(addUserDTO, encoder);
@@ -69,12 +72,17 @@ public class UserService {
             return true;
         }
 
-        throw new UnauthorizedAccessException();
+        throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
     }
 
-    public void updateUserRole(String userId, Role role) {
-        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        user.setRoles(List.of(role));
-        userRepository.save(user);
+    public boolean updateUserRole(String userId, Role role) {
+        if (userContext.getRoles().contains(Role.ADMIN)) {
+            var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+            user.setRoles(List.of(role));
+            userRepository.save(user);
+            return true;
+        }
+
+        throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
     }
 }

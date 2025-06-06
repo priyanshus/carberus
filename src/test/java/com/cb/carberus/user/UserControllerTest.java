@@ -136,6 +136,7 @@ public class UserControllerTest {
         addUserDTO.setEmail("b@b.com");
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
+        addUserDTO.setRole(Role.TESTER);
         addUserDTO.setPassword("somepassword");
 
         doNothing().when(userService).addUser(any(AddUserDTO.class));
@@ -155,6 +156,7 @@ public class UserControllerTest {
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
         addUserDTO.setPassword("somepassword");
+        addUserDTO.setRole(Role.TESTER);
 
         doThrow(new UserAlreadyExistException())
                 .when(userService).addUser(any(AddUserDTO.class));

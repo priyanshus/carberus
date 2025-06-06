@@ -56,6 +56,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
         token = extractToken(request);
+        System.out.println(token);
         if (token == null || token.isEmpty()) {
             throw new AuthenticationFailedException();
         }

@@ -24,7 +24,12 @@ public class Mapper {
     public static UserResponseDTO toCurrentUserResponse(User user) {
         UserResponseDTO currentUserResponseDTO = new UserResponseDTO();
         currentUserResponseDTO.setEmail(user.getEmail());
-        currentUserResponseDTO.setRoles(toStringRoles(user.getRoles()));
+        currentUserResponseDTO.setFirstName(user.getFirstName());
+        currentUserResponseDTO.setLastName(user.getLastName());
+
+        if (user.getRoles() != null) {
+            currentUserResponseDTO.setRoles(toStringRoles(user.getRoles()));
+        }
         currentUserResponseDTO.setId(user.getId());
         currentUserResponseDTO.setCreatedAt(user.getCreatedAt());
         return currentUserResponseDTO;
@@ -37,6 +42,7 @@ public class Mapper {
         user.setLastName(dto.getLastName());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
+        user.setRoles(List.of(dto.getRole()));
         return user;
     }
 
@@ -44,13 +50,11 @@ public class Mapper {
         return roles.stream()
                 .map(role -> Role.valueOf(role.toUpperCase()))
                 .collect(Collectors.toList());
-    };
+    }
 
     private static List<String> toStringRoles(List<Role> roles) {
         return roles.stream()
                 .map(Role::name)
                 .collect(Collectors.toList());
-    };
-
-
+    }
 }

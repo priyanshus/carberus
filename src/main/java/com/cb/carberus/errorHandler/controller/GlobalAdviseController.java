@@ -1,12 +1,10 @@
 package com.cb.carberus.errorHandler.controller;
 
 import com.cb.carberus.errorHandler.dto.ErrorResponseDTO;
-import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
-import com.cb.carberus.errorHandler.error.UnauthorizedAccessException;
-import com.cb.carberus.errorHandler.error.UserAlreadyExistException;
-import com.cb.carberus.errorHandler.error.UserNotFoundException;
+import com.cb.carberus.errorHandler.error.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,5 +35,15 @@ public class GlobalAdviseController {
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<ErrorResponseDTO> unauthorizedAccess(UserAlreadyExistException exception) {
         return new ResponseEntity<>(new ErrorResponseDTO(exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AbstractApiException.class)
+    public ResponseEntity<ErrorResponseDTO> applicationError(AbstractApiException ex) {
+        return new ResponseEntity<>(new ErrorResponseDTO(ex.getMessage()), HttpStatus.valueOf(ex.getStatusCode()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> applicationError(HttpMessageNotReadableException ex) {
+        return new ResponseEntity<>(new ErrorResponseDTO("INVALID_INPUT"), HttpStatus.BAD_REQUEST);
     }
 }
