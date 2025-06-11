@@ -1,6 +1,7 @@
 package com.cb.carberus.security.config;
 
 import com.cb.carberus.auth.service.AuthUserDetailsService;
+import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.Role;
 import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
@@ -20,9 +21,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -56,24 +56,42 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
         token = extractToken(request);
-        System.out.println(token);
         if (token == null || token.isEmpty()) {
             throw new AuthenticationFailedException();
         }
 
         Map<String, Object> decodeJwt  = jwtUtil.validateToken(token);
         String email = decodeJwt.get("subject").toString();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+        CustomUserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        List<Role> userRoles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(Role::valueOf)
-                .collect(Collectors.toList());
-        userContext.setRoles(userRoles);
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(authToken);
+
+        Role userRole = getRole(userDetails);
+        userContext.setRole(userRole);
+        userContext.setUserId(userDetails.getUserId());
         filterChain.doFilter(request, response);
+    }
+
+    private Role getRole(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority) // e.g., "ADMIN"
+                .map(String::toUpperCase)            // match enum casing if needed
+                .map(roleStr -> {
+                    try {
+                        return Role.valueOf(roleStr);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No valid role found"));
     }
 
     private String extractToken(HttpServletRequest request) {

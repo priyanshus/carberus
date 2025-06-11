@@ -1,6 +1,7 @@
 package com.cb.carberus.user;
 
 import com.cb.carberus.auth.service.AuthUserDetailsService;
+import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.Role;
 import com.cb.carberus.errorHandler.error.UserAlreadyExistException;
@@ -9,6 +10,7 @@ import com.cb.carberus.security.jwt.JwtUtil;
 import com.cb.carberus.user.controller.UserController;
 import com.cb.carberus.user.dto.AddUserDTO;
 import com.cb.carberus.user.dto.UserResponseDTO;
+import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.service.UserService;
 import com.cb.carberus.util.TestJwtUtil;
 import com.cb.carberus.util.TestSecurityFilter;
@@ -22,8 +24,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -65,11 +65,15 @@ public class UserControllerTest {
         userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId("some-id");
         userResponseDTO.setEmail("a@a.com");
-        userResponseDTO.setRoles(List.of("STUDENT"));
+        userResponseDTO.setRole("ADMIN");
         userResponseDTO.setCreatedAt(LocalDateTime.now());
 
         jwtToken = TestJwtUtil.createToken("a@a.com");
-        UserDetails mockUser = new User("a@a.com", "", List.of(() -> "STUDENT"));
+        User user = new User();
+        user.setRole(Role.ADMIN);
+        user.setId("some-id");
+        user.setEmail("a@a.com");
+        CustomUserDetails mockUser = new CustomUserDetails(user);
 
         when(authUserDetailsService.loadUserByUsername("a@a.com")).thenReturn(mockUser);
         when(jwtUtil.validateToken(jwtToken)).thenReturn(Map.of("subject", "a@a.com"));
@@ -89,7 +93,12 @@ public class UserControllerTest {
     @Test
     void shouldFailWhenThereIsNotAuthToken() throws Exception {
         String token = TestJwtUtil.createToken("a@a.com");
-        UserDetails mockUser = new User("a@a.com", "", List.of(() -> "STUDENT"));
+
+        User user = new User();
+        user.setRole(Role.ADMIN);
+        user.setId("some-id");
+        user.setEmail("a@a.com");
+        CustomUserDetails mockUser = new CustomUserDetails(user);
         when(authUserDetailsService.loadUserByUsername("a@a.com")).thenReturn(mockUser);
         when(jwtUtil.validateToken(token)).thenReturn(Map.of("subject", "a@a.com"));
         when(userService.getCurrentUser()).thenReturn(userResponseDTO);
@@ -112,7 +121,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value("some-id"))
                 .andExpect(jsonPath("$[0].email").value("a@a.com"))
-                .andExpect(jsonPath("$[0].roles").value("STUDENT"));
+                .andExpect(jsonPath("$[0].role").value("ADMIN"));
     }
 
     @Test
@@ -126,7 +135,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("some-id"))
                 .andExpect(jsonPath("$.email").value("a@a.com"))
-                .andExpect(jsonPath("$.roles").value("STUDENT"));
+                .andExpect(jsonPath("$.role").value("ADMIN"));
     }
 
     @Test
@@ -136,7 +145,7 @@ public class UserControllerTest {
         addUserDTO.setEmail("b@b.com");
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
-        addUserDTO.setRole(Role.TESTER);
+        addUserDTO.setRole(Role.TESTMANAGER);
         addUserDTO.setPassword("somepassword");
 
         doNothing().when(userService).addUser(any(AddUserDTO.class));
@@ -194,7 +203,7 @@ public class UserControllerTest {
     void shouldReturnError_WhenDeleteUserCalledByNonAdminUser() throws Exception {
         String userId = "some-id";
 
-        when(userContext.getRoles()).thenReturn(List.of(Role.STUDENT));
+        when(userContext.getRole()).thenReturn(Role.TESTMANAGER);
 
         mockMvc.perform(delete(String.format("/users/%s", userId))
                         .cookie(new Cookie("token", jwtToken)))

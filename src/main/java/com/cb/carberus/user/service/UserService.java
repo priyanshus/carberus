@@ -66,7 +66,10 @@ public class UserService {
     }
 
     public boolean deleteUser(String id) {
-        if (userContext.getRoles().contains(Role.ADMIN)) {
+        System.out.println(userContext.getRole());
+        System.out.println(userContext.getUserId());
+
+        if (userContext.getRole().equals(Role.ADMIN)) {
             var user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
             userRepository.delete(user);
             return true;
@@ -76,9 +79,9 @@ public class UserService {
     }
 
     public boolean updateUserRole(String userId, Role role) {
-        if (userContext.getRoles().contains(Role.ADMIN)) {
+        if (userContext.getRole().equals(Role.ADMIN)) {
             var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-            user.setRoles(List.of(role));
+            user.setRole(role);
             userRepository.save(user);
             return true;
         }

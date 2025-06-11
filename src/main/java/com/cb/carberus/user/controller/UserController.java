@@ -39,7 +39,7 @@ public class UserController {
 
     @PostMapping("/users")
     public ResponseEntity<Void> addUser(@Valid  @RequestBody AddUserDTO addUserDTO) {
-        System.out.println(addUserDTO.toString());
+        System.out.println(addUserDTO);
         userService.addUser(addUserDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

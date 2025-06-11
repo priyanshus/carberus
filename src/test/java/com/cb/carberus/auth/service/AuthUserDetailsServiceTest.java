@@ -31,7 +31,7 @@ public class AuthUserDetailsServiceTest {
         User mockUser = new User();
         mockUser.setEmail("user@example.com");
         mockUser.setPassword("encodedPassword");
-        mockUser.setRoles(List.of(Role.STUDENT, Role.ADMIN));
+        mockUser.setRole(Role.ADMIN);
 
         when(userRepository.findByEmail("user@example.com"))
                 .thenReturn(Optional.of(mockUser));
@@ -41,8 +41,6 @@ public class AuthUserDetailsServiceTest {
 
         Assertions.assertEquals("user@example.com", userDetails.getUsername());
         Assertions.assertEquals("encodedPassword", userDetails.getPassword());
-        Assertions.assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("STUDENT")));
         Assertions.assertTrue(userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ADMIN")));
     }
@@ -64,7 +62,6 @@ public class AuthUserDetailsServiceTest {
         User mockUser = new User();
         mockUser.setEmail("user@example.com");
         mockUser.setPassword("encodedPassword");
-        mockUser.setRoles(Collections.emptyList());
 
         when(userRepository.findByEmail("user@example.com"))
                 .thenReturn(Optional.of(mockUser));

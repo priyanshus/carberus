@@ -1,6 +1,7 @@
 package com.cb.carberus.auth.service;
 
 import com.cb.carberus.auth.dto.LoginRequestDTO;
+import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
 import com.cb.carberus.security.jwt.JwtUtil;
@@ -45,7 +46,7 @@ public class AuthServiceTest {
         mockLoginRequest.setEmail(email);
         mockLoginRequest.setPassword(rawPassword);
 
-        UserDetails userDetails = mock(UserDetails.class);
+        CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
         when(authUserDetailsService.loadUserByUsername(email))
                 .thenReturn(userDetails);
@@ -71,7 +72,7 @@ public class AuthServiceTest {
         mockLoginRequest.setEmail(email);
         mockLoginRequest.setPassword(rawPassword);
 
-        UserDetails userDetails = mock(UserDetails.class);
+        CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
         when(authUserDetailsService.loadUserByUsername(email))
                 .thenReturn(userDetails);

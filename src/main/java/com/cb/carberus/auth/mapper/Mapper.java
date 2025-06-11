@@ -8,8 +8,6 @@ import com.cb.carberus.user.model.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Mapper {
     public static User toUser(SignupRequestDTO dto, BCryptPasswordEncoder encoder) {
@@ -17,7 +15,7 @@ public class Mapper {
         user.setEmail(dto.getEmail());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRoles(toEnumRoles(dto.getRoles()));
+        user.setRole(toEnumRole(dto.getRole()));
         return user;
     }
 
@@ -27,8 +25,8 @@ public class Mapper {
         currentUserResponseDTO.setFirstName(user.getFirstName());
         currentUserResponseDTO.setLastName(user.getLastName());
 
-        if (user.getRoles() != null) {
-            currentUserResponseDTO.setRoles(toStringRoles(user.getRoles()));
+        if (user.getRole() != null) {
+            currentUserResponseDTO.setRole(user.getRole().name());
         }
         currentUserResponseDTO.setId(user.getId());
         currentUserResponseDTO.setCreatedAt(user.getCreatedAt());
@@ -42,19 +40,12 @@ public class Mapper {
         user.setLastName(dto.getLastName());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRoles(List.of(dto.getRole()));
+        user.setRole(dto.getRole());
         return user;
     }
 
-    private static List<Role> toEnumRoles(List<String> roles) {
-        return roles.stream()
-                .map(role -> Role.valueOf(role.toUpperCase()))
-                .collect(Collectors.toList());
+    private static Role toEnumRole(String role) {
+        return Role.valueOf(role.toUpperCase());
     }
 
-    private static List<String> toStringRoles(List<Role> roles) {
-        return roles.stream()
-                .map(Role::name)
-                .collect(Collectors.toList());
-    }
 }

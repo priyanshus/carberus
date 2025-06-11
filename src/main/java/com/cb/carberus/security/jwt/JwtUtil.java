@@ -5,27 +5,32 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
+import com.cb.carberus.errorHandler.error.StandardApiException;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 @Component
 public class JwtUtil {
     private final static String SECRET_KEY = "your-256-bit";
 
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+    public String generateToken(CustomUserDetails userDetails) {
 
-        claims.put("roles", roles);
+        Map<String, Object> claims = new HashMap<>();
+
+        String role = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toUpperCase)
+                .findFirst()
+                .orElseThrow(() -> new StandardApiException(StandardErrorCode.UNAUTHORIZED));
+
+        claims.put("role", role);
 
         return JWT.create()
                 .withPayload(claims)
@@ -40,7 +45,7 @@ public class JwtUtil {
             throw new AuthenticationFailedException();
         }
 
-        // Verify the token
+
         JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build();
         DecodedJWT decodedJwt = null;
 

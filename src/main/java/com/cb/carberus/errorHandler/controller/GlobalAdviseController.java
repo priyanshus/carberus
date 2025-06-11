@@ -2,12 +2,17 @@ package com.cb.carberus.errorHandler.controller;
 
 import com.cb.carberus.errorHandler.dto.ErrorResponseDTO;
 import com.cb.carberus.errorHandler.error.*;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalAdviseController {
@@ -18,8 +23,14 @@ public class GlobalAdviseController {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDTO> handleValidationErrors(MethodArgumentNotValidException ex) {
-        return new ResponseEntity<>(new ErrorResponseDTO("provided payload is faulty"), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+        errors.put("errorCode", StandardErrorCode.INVALID_INPUT.getErrorCode());
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

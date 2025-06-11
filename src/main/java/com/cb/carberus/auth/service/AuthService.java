@@ -26,6 +26,7 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), userDetails.getPassword())) {
             throw new AuthenticationFailedException();
         }
+
         return jwtUtil.generateToken(userDetails);
     }
 

@@ -6,26 +6,41 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 @Component
 @Scope(value = WebApplicationContext.SCOPE_REQUEST,  proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class UserContext {
-    private List<Role> roles;
-    public void setRoles(List<Role> roles) {
-        if (this.roles != null) {
+    private Role role;
+    private String userId;
+
+    public void setRole(Role role) {
+        if (this.role != null) {
             throw new IllegalStateException("hasRoles can only be set once");
         }
 
-        this.roles = Collections.unmodifiableList(new ArrayList<>(roles));
+        this.role = role;
     }
 
-    public List<Role> getRoles() {
-        if (roles == null) {
+    public Role getRole() {
+        if (this.role == null) {
             throw new IllegalStateException("hasRoles not initialized");
         }
-        return roles;
+
+        return this.role;
+    }
+
+    public String getUserId() {
+        if (this.userId == null) {
+            throw new IllegalStateException("userId not initialized");
+        }
+
+        return this.userId;
+    }
+
+    public void setUserId(String userId) {
+        if (this.userId != null) {
+            throw new IllegalStateException("userId can only be set once");
+        }
+
+        this.userId = userId;
     }
 }

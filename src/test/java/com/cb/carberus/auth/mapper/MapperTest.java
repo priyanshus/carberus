@@ -19,7 +19,7 @@ public class MapperTest {
         SignupRequestDTO dto = new SignupRequestDTO();
         dto.setEmail("user@example.com");
         dto.setPassword("plainPassword");
-        dto.setRoles(List.of("STUDENT", "ADMIN"));
+        dto.setRole("ADMIN");
 
         BCryptPasswordEncoder encoder =
                 mock(BCryptPasswordEncoder.class);
@@ -30,8 +30,7 @@ public class MapperTest {
         Assertions.assertEquals("user@example.com", user.getEmail());
         Assertions.assertEquals("encodedPassword", user.getPassword());
         Assertions.assertNotNull(user.getCreatedAt());
-        Assertions.assertTrue(user.getRoles().contains(Role.STUDENT));
-        Assertions.assertTrue(user.getRoles().contains(Role.ADMIN));
+        Assertions.assertEquals(user.getRole(), Role.ADMIN);
     }
 
     @Test
@@ -40,15 +39,14 @@ public class MapperTest {
         user.setId("some-id");
         user.setEmail("user@example.com");
         user.setCreatedAt(java.time.LocalDateTime.now());
-        user.setRoles(List.of(Role.STUDENT, Role.ADMIN));
+        user.setRole(Role.ADMIN);
 
         UserResponseDTO dto = Mapper.toCurrentUserResponse(user);
 
         Assertions.assertEquals("some-id", dto.getId());
         Assertions.assertEquals("user@example.com", dto.getEmail());
         Assertions.assertEquals(user.getCreatedAt(), dto.getCreatedAt());
-        Assertions.assertTrue(dto.getRoles().contains("STUDENT"));
-        Assertions.assertTrue(dto.getRoles().contains("ADMIN"));
+        Assertions.assertTrue(dto.getRole().contains("ADMIN"));
     }
 
     @Test
@@ -56,15 +54,13 @@ public class MapperTest {
         SignupRequestDTO dto = new SignupRequestDTO();
         dto.setEmail("user@example.com");
         dto.setPassword("password");
-        dto.setRoles(java.util.Collections.emptyList());
+        dto.setRole("");
 
         BCryptPasswordEncoder encoder =
                 mock(BCryptPasswordEncoder.class);
         when(encoder.encode("password")).thenReturn("encoded");
 
-        User user = Mapper.toUser(dto, encoder);
-
-        Assertions.assertTrue(user.getRoles().isEmpty());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Mapper.toUser(dto, encoder));
     }
 
     @Test
@@ -72,7 +68,7 @@ public class MapperTest {
         SignupRequestDTO dto = new SignupRequestDTO();
         dto.setEmail("user@example.com");
         dto.setPassword("password");
-        dto.setRoles(List.of("INVALID_ROLE"));
+        dto.setRole("INVALID_ROLE");
 
        BCryptPasswordEncoder encoder =
                 mock(BCryptPasswordEncoder.class);
