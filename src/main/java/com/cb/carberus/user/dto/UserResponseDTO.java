@@ -1,5 +1,6 @@
 package com.cb.carberus.user.dto;
 
+import com.cb.carberus.constants.Role;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,5 +12,5 @@ public class UserResponseDTO {
     private String firstName;
     private String lastName;
     private LocalDateTime createdAt;
-    private String role;
+    private Role role;
 }

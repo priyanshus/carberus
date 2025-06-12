@@ -4,7 +4,8 @@ public enum Role {
     ADMIN,
     VIEWER,
     TESTER,
-    TESTMANAGER
+    TESTMANAGER,
+    NOACCESS
 }
 
 

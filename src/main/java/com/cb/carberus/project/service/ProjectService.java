@@ -49,24 +49,22 @@ public class ProjectService {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
-
         Project project = ProjectDTOMapper.toProject(dto);
         List<Project> projectsInDb = projectRepository.findAll();
 
         boolean projectTitleAlreadyTaken = projectsInDb
                 .stream()
-                .anyMatch(p -> p.getName() != null && p.getName().equals(dto.getName()));
+                .anyMatch(p -> p.getName() != null && p.getName().equalsIgnoreCase(dto.getName()));
 
         boolean projectPrefixAlreadyTaken = projectsInDb
                 .stream()
-                .anyMatch(p -> p.getPrefix() != null && p.getPrefix().equals(dto.getPrefix()));
+                .anyMatch(p -> p.getPrefix() != null && p.getPrefix().equalsIgnoreCase(dto.getPrefix()));
 
         if (projectTitleAlreadyTaken) {
             throw new DomainException(DomainErrorCode.PROJECT_NAME_ALREADY_EXIST);
         }
 
         if (projectPrefixAlreadyTaken) {
-            System.out.println("projectPrefixAlreadyTaken");
             throw new DomainException(DomainErrorCode.PROJECT_PREFIX_ALREADY_EXIST);
         }
 

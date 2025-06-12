@@ -26,7 +26,7 @@ public class Mapper {
         currentUserResponseDTO.setLastName(user.getLastName());
 
         if (user.getRole() != null) {
-            currentUserResponseDTO.setRole(user.getRole().name());
+            currentUserResponseDTO.setRole(user.getRole());
         }
         currentUserResponseDTO.setId(user.getId());
         currentUserResponseDTO.setCreatedAt(user.getCreatedAt());
