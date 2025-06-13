@@ -1,7 +1,6 @@
 package com.cb.carberus.authorization.service;
 
 import com.cb.carberus.constants.ProjectRole;
-import com.cb.carberus.constants.UserRole;
 import org.springframework.stereotype.Component;
 
 @Component

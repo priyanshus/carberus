@@ -3,7 +3,6 @@ package com.cb.carberus.project;
 import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.model.DomainErrorCode;
 import com.cb.carberus.project.controller.ProjectController;
@@ -12,11 +11,8 @@ import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.repository.ProjectRepository;
 import com.cb.carberus.project.service.ProjectService;
 import com.cb.carberus.security.config.JwtAuthorizationFilter;
-import com.cb.carberus.user.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,7 +24,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
 

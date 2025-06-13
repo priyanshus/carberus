@@ -3,13 +3,10 @@ package com.cb.carberus.auth.mapper;
 import com.cb.carberus.auth.dto.SignupRequestDTO;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.user.model.User;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class MapperTest {
     @Test

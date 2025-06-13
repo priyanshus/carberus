@@ -1,7 +1,6 @@
 package com.cb.carberus.authorization.service;
 
 import com.cb.carberus.constants.Role;
-import com.cb.carberus.constants.UserRole;
 
 public interface UserPermission <R extends Role> {
     boolean canAdd(R role);

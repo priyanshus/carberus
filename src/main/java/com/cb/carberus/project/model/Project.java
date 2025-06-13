@@ -1,8 +1,8 @@
 package com.cb.carberus.project.model;
 
 import com.cb.carberus.user.model.User;
-import lombok.Data;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

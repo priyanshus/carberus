@@ -1,14 +1,10 @@
 package com.cb.carberus.project;
 
 import com.cb.carberus.authorization.service.AdminPermission;
-import com.cb.carberus.authorization.service.ProjectPermission;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.ProjectRole;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
-import com.cb.carberus.errorHandler.model.DomainErrorCode;
-import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.model.Project;
@@ -20,19 +16,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 public class ProjectServiceTest {
@@ -61,14 +56,72 @@ public class ProjectServiceTest {
 
         existingProject = new Project();
         existingProject.setId(Long.parseLong("1"));
+        existingProject.setDescription("some-desc");
+        existingProject.setCreatedAt(LocalDateTime.now());
         existingProject.setName("some-project");
         existingProject.setProjectCode("SOME");
         existingProject.setStatus(ProjectStatus.ACTIVE);
     }
 
+
+    @Test
+    void getProjects_ShouldBringAllProjects() {
+        Project project = new Project();
+        project.setName("some-project");
+        project.setDescription("some-desc");
+
+        Mockito.when(projectRepository.findAll()).thenReturn(
+                List.of(project)
+        );
+
+        // Act
+        List<ProjectDTO> projectDTOList = projectService.getAllProjects();
+
+        // Assert
+        Assertions.assertEquals(1, projectDTOList.size());
+        Assertions.assertEquals("some-project", projectDTOList.getFirst().getName());
+    }
+
+    @Test
+    void getProjects_ShouldBringNoProjectsWhenThereIsNoProjectInDB() {
+        Mockito.when(projectRepository.findAll()).thenReturn(List.of());
+
+        // Act
+        List<ProjectDTO> projectDTOList = projectService.getAllProjects();
+
+        // Assert
+        Assertions.assertEquals(0, projectDTOList.size());
+    }
+
+    @Test
+    void getProject_ShouldBringSingleProjectMatchedWithProjectId() {
+        Project project = new Project();
+        project.setName("some-project");
+        project.setStatus(ProjectStatus.ACTIVE);
+        project.setDescription("some-desc");
+
+        Mockito.when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+
+        // Act
+        ProjectDTO projectDTO = projectService.getProject("1234");
+
+        // Assert
+        Assertions.assertEquals("some-project", projectDTO.getName());
+        Assertions.assertEquals("some-desc", projectDTO.getDescription());
+        Assertions.assertEquals("ACTIVE", projectDTO.getStatus());
+    }
+
+    @Test
+    void getProject_ShouldThrowExceptionProjectNotFound_WhenProjectIDDoesNotMatch() {
+        Mockito.when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Assert
+        assertThrows(DomainException.class, () -> projectService.getProject("9183903"));
+    }
+
+
     @Test
     void addProject_shouldSaveProject_whenValidAndAuthorized() {
-
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
         Mockito.when(adminPermission.canAdd(Mockito.any()))
                 .thenReturn(true);
@@ -86,120 +139,59 @@ public class ProjectServiceTest {
         // Assert
         Assertions.assertNotNull(result);
         Assertions.assertEquals("some-project", result.getName());
+        Assertions.assertEquals("SOME", result.getProjectCode());
+        Assertions.assertEquals("some-desc", result.getDescription());
+        Assertions.assertEquals("ACTIVE", result.getStatus());
+        Assertions.assertNotNull(result.getCreatedAt());
+
         Mockito.verify(projectRepository).save(Mockito.any(Project.class));
     }
-//
-//    @Test
-//    void addProject_shouldThrowError_WhenRoleIsNonAdmin() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(false);
-//
-//        StandardApiException ex = Assertions.assertThrows(StandardApiException.class,
-//                () -> projectService.addProject(addProjectDTO));
-//
-//        Assertions.assertEquals(StandardErrorCode.UNAUTHORIZED, ex.getErrorCode());
-//    }
-//
-//    @Test
-//    void addProject_shouldThrow_whenNameAlreadyExists() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
-//
-//        Project duplicate = new Project();
-//        duplicate.setName("New Project");
-//        duplicate.setPrefix("OTHER");
-//
-//        Mockito.when(projectRepository.findAll()).thenReturn(List.of(duplicate));
-//
-//        DomainException ex = Assertions.assertThrows(DomainException.class,
-//                () -> projectService.addProject(addProjectDTO));
-//
-//        Assertions.assertEquals(DomainErrorCode.PROJECT_NAME_ALREADY_EXIST, ex.getErrorCode());
-//    }
-//
-//    @Test
-//    void addProject_shouldThrow_whenPrefixAlreadyExists() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
-//
-//        Project duplicate = new Project();
-//        duplicate.setName("some-project");
-//        duplicate.setPrefix("NP");
-//
-//        Mockito.when(projectRepository.findAll()).thenReturn(List.of(duplicate));
-//
-//        DomainException ex = Assertions.assertThrows(DomainException.class,
-//                () -> projectService.addProject(addProjectDTO));
-//
-//        Assertions.assertEquals(DomainErrorCode.PROJECT_PREFIX_ALREADY_EXIST, ex.getErrorCode());
-//    }
-//
-//
-//    @Test
-//    void updateProject_shouldUpdate_whenAuthorizedAndActive() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
-//
-//        projectService.updateProject(updateProjectDTO);
-//
-//        Assertions.assertEquals("Updated Name", existingProject.getName());
-//        Mockito.verify(projectRepository).save(existingProject);
-//    }
-//
-//    @Test
-//    void updateProject_shouldThrow_whenArchived() {
-//        existingProject.setStatus(ProjectStatus.ARCHIVED);
-//
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
-//
-//        DomainException ex = Assertions.assertThrows(DomainException.class,
-//                () -> projectService.updateProject(updateProjectDTO));
-//
-//        Assertions.assertEquals(DomainErrorCode.PROJECT_IN_ARCHIVED_STATE, ex.getErrorCode());
-//    }
-//
-//    @Test
-//    void changeProjectStatus_shouldUpdate_whenDifferent() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
-//
-//        projectService.changeProjectStatus("p1", statusDTO);
-//
-//        Assertions.assertEquals(ProjectStatus.ARCHIVED, existingProject.getStatus());
-//        Mockito.verify(projectRepository).save(existingProject);
-//    }
-//
-//    @Test
-//    void getProjects_shouldReturn_whenAuthorized() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findAll()).thenReturn(List.of(existingProject));
-//
-//        List<ProjectDTO> projects = projectService.getProjects();
-//        Assertions.assertEquals(1, projects.size());
-//    }
-//
-//    @Test
-//    void getProject_shouldReturn_whenExists() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
-//
-//        Project p = projectService.getProject("p1");
-//        Assertions.assertEquals("p1", p.getId());
-//    }
-//
-//    @Test
-//    void getProject_shouldThrow_whenNotFound() {
-//        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-//        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
-//        Mockito.when(projectRepository.findById("bad-id")).thenReturn(Optional.empty());
-//
-//        Assertions.assertThrows(StandardApiException.class,
-//                () -> projectService.getProject("bad-id"));
-//    }
+
+
+    @Test
+    void addProject_shouldThrowException_whenNonAdminSavesProject() {
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        Mockito.when(adminPermission.canAdd(Mockito.any()))
+                .thenReturn(false);
+
+
+        // Act
+        Exception ex = assertThrows(StandardApiException.class, () -> projectService.addProject(addProjectDTO));
+
+        // Assert
+        assertTrue(ex.getMessage().contains("UNAUTHORIZED"));
+    }
+
+    @Test
+    void addProject_shouldThrowException_whenDuplicateNameUsed() {
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        Mockito.when(adminPermission.canAdd(Mockito.any()))
+                .thenReturn(true);
+
+        Mockito.when(projectRepository.findByName("some-project"))
+                .thenReturn(Optional.of(existingProject));
+
+
+        // Act
+        Exception ex = assertThrows(DomainException.class, () -> projectService.addProject(addProjectDTO));
+
+        // Assert
+        assertTrue(ex.getMessage().contains("NAME"));
+    }
+
+    @Test
+    void addProject_shouldThrowException_whenDuplicateProjectCodeUsed() {
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        Mockito.when(adminPermission.canAdd(Mockito.any()))
+                .thenReturn(true);
+
+        Mockito.when(projectRepository.findByProjectCode("SOME"))
+                .thenReturn(Optional.of(existingProject));
+
+        // Act
+        Exception ex = assertThrows(DomainException.class, () -> projectService.addProject(addProjectDTO));
+
+        // Assert
+        assertTrue(ex.getMessage().contains("PREFIX_ALREADY_EXIST"));
+    }
 }

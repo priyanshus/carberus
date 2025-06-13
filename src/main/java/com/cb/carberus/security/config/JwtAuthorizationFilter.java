@@ -4,7 +4,6 @@ import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.UserRole;
-import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.security.jwt.JwtUtil;

@@ -43,13 +43,10 @@ public class ProjectService {
     }
 
     public List<ProjectDTO> getAllProjects() {
+        log.info("Get Projects");
         Iterable<Project> projects = projectRepository.findAll();
 
         List<Project> projectList = StreamSupport.stream(projects.spliterator(), false).toList();
-
-        if (projectList.isEmpty()) {
-            throw new DomainException(DomainErrorCode.PROJECT_NOT_FOUND);
-        }
 
         return projectList
                 .stream()
@@ -73,7 +70,7 @@ public class ProjectService {
             boolean isDuplicatedCode = projectRepository.findByProjectCode(addProjectDTO.getProjectCode()).isPresent();
 
             if (isDuplicatedCode) {
-                throw new DomainException(DomainErrorCode.PROJECT_PREFIX_ALREADY_EXIST);
+                throw new DomainException(DomainErrorCode.PROJECT_CODE_ALREADY_EXIST);
             }
 
             if (isDuplicateName) {
