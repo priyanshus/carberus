@@ -1,22 +1,21 @@
 package com.cb.carberus.project.dto;
 
-import com.cb.carberus.project.model.ProjectStatus;
+import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@Builder
 public class ProjectDTO {
-    @Id
-    private String id;
+    private Long id;
     private String name;
     private String description;
-    private String prefix;
+    private String projectCode;
+    private String status;
+    private Long createdBy;
     private LocalDateTime createdAt;
-    private String createdBy;
-    private String lastModifiedBy;
-    private ProjectStatus status;
+    private LocalDateTime updatedAt;
     private List<ProjectMemberDTO> members;
 }

@@ -8,17 +8,18 @@ import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.errorHandler.model.DomainErrorCode;
 import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.dto.AddProjectDTO;
-import com.cb.carberus.project.dto.ChangeProjectStatusDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
-import com.cb.carberus.project.dto.UpdateProjectDTO;
+import com.cb.carberus.project.mapper.ProjectMapper;
 import com.cb.carberus.project.model.Project;
-import com.cb.carberus.project.model.ProjectStatus;
 import com.cb.carberus.project.repository.ProjectRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
+@Slf4j
 @Service
 public class ProjectService {
     @Autowired
@@ -41,94 +42,52 @@ public class ProjectService {
         return userContext.getUserId();
     }
 
-    public void addProject(AddProjectDTO dto) {
-        var role = getCurrentRole();
-        var canAdd = adminPermission.canAdd(role);
+    public List<ProjectDTO> getAllProjects() {
+        Iterable<Project> projects = projectRepository.findAll();
 
-        if(!canAdd) {
-            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
+        List<Project> projectList = StreamSupport.stream(projects.spliterator(), false).toList();
+
+        if (projectList.isEmpty()) {
+            throw new DomainException(DomainErrorCode.PROJECT_NOT_FOUND);
         }
 
-        Project project = ProjectDTOMapper.toProject(dto);
-        List<Project> projectsInDb = projectRepository.findAll();
-
-        boolean projectTitleAlreadyTaken = projectsInDb
+        return projectList
                 .stream()
-                .anyMatch(p -> p.getName() != null && p.getName().equalsIgnoreCase(dto.getName()));
-
-        boolean projectPrefixAlreadyTaken = projectsInDb
-                .stream()
-                .anyMatch(p -> p.getPrefix() != null && p.getPrefix().equalsIgnoreCase(dto.getPrefix()));
-
-        if (projectTitleAlreadyTaken) {
-            throw new DomainException(DomainErrorCode.PROJECT_NAME_ALREADY_EXIST);
-        }
-
-        if (projectPrefixAlreadyTaken) {
-            throw new DomainException(DomainErrorCode.PROJECT_PREFIX_ALREADY_EXIST);
-        }
-
-        projectRepository.save(project);
+                .map(ProjectMapper.INSTANCE::toProjectDTO)
+                .toList();
     }
 
-    public void updateProject(UpdateProjectDTO dto) {
-        var role = getCurrentRole();
-        var canAdd = adminPermission.canAdd(role);
+    public ProjectDTO getProject(String projectId) {
+        log.info("Get Project: {}", projectId);
+        Long id = Long.parseLong(projectId);
+        Project project = projectRepository.findById(id)
+                .orElseThrow( () -> new DomainException(DomainErrorCode.PROJECT_NOT_FOUND));
 
-        if(!canAdd) {
-            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
-        }
-
-        Project project = projectRepository.findById(dto.getId()).orElseThrow(
-                () -> new StandardApiException(StandardErrorCode.NOT_FOUND));
-
-        if (project.getStatus().equals(ProjectStatus.ARCHIVED)) {
-            throw new DomainException(DomainErrorCode.PROJECT_IN_ARCHIVED_STATE);
-        }
-
-        project.setName(dto.getName());
-        project.setDescription(dto.getDescription());
-        projectRepository.save(project);
+        return ProjectMapper.INSTANCE.toProjectDTO(project);
     }
 
-    public void changeProjectStatus(String projectId, ChangeProjectStatusDTO dto) {
-        var role = getCurrentRole();
-        var canAdd = adminPermission.canAdd(role);
+    public ProjectDTO addProject(AddProjectDTO addProjectDTO) {
+        log.info("Adding Project: {}", addProjectDTO.getName());
+        if (adminPermission.canAdd(getCurrentRole())) {
+            boolean isDuplicateName = projectRepository.findByName(addProjectDTO.getName()).isPresent();
+            boolean isDuplicatedCode = projectRepository.findByProjectCode(addProjectDTO.getProjectCode()).isPresent();
 
-        if(!canAdd) {
-            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
+            if (isDuplicatedCode) {
+                throw new DomainException(DomainErrorCode.PROJECT_PREFIX_ALREADY_EXIST);
+            }
+
+            if (isDuplicateName) {
+                throw new DomainException(DomainErrorCode.PROJECT_NAME_ALREADY_EXIST);
+            }
+
+            Project project = ProjectMapper.INSTANCE.toProject(addProjectDTO);
+            project.setCreatedBy(userContext.getUser());
+            Project savedProject =  projectRepository.save(project);
+            log.info("Added Project: {}", savedProject.getName());
+            return ProjectMapper.INSTANCE.toProjectDTO(savedProject);
         }
 
-        Project project = projectRepository.findById(projectId).orElseThrow(
-                () -> new StandardApiException(StandardErrorCode.NOT_FOUND));
-
-
-        if (project.getStatus() != dto.getProjectStatus()) {
-            project.setStatus(dto.getProjectStatus());
-            projectRepository.save(project);
-        }
-    }
-
-    public List<ProjectDTO> getProjects() {
-        var role = getCurrentRole();
-        var canView = adminPermission.canView(role);
-
-        if(!canView) {
-            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
-        }
-
-        return List.of(new ProjectDTO());
-        //return projectRepository.findAll();
-    }
-
-    public Project getProject(String id) {
-        var role = getCurrentRole();
-        var canView = adminPermission.canView(role);
-        if(!canView) {
-            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
-        }
-
-        return projectRepository.findById(id)
-                .orElseThrow(() -> new StandardApiException(StandardErrorCode.NOT_FOUND));
+        log.info("Failed to add Project as {} is unauthorized", getCurrentRole());
+        throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
     }
 }

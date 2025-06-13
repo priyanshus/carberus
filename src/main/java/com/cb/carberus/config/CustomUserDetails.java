@@ -2,6 +2,7 @@ package com.cb.carberus.config;
 
 import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.user.model.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
+    @Getter
+    private final User user;
     private final Long id;
     private final String username;
     private final String password;
@@ -24,6 +27,7 @@ public class CustomUserDetails implements UserDetails {
             throw new UserNotFoundException();
         }
 
+        this.user = user;
         this.authorities = List.of(new SimpleGrantedAuthority(user.getUserRole().name()));
     }
 
@@ -46,4 +50,5 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return username;
     }
+
 }

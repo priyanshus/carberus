@@ -30,4 +30,6 @@ public class AuthUserDetailsService implements UserDetailsService {
 
         return new CustomUserDetails(user);
     }
+
+
 }

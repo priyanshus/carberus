@@ -1,11 +1,19 @@
 package com.cb.carberus.project.dto;
 
-import com.cb.carberus.constants.ProjectRole;
-import com.cb.carberus.user.dto.UserDTO;
+import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
+@Builder
 public class ProjectMemberDTO {
-    private UserDTO userDTO;
-    private ProjectRole projectRole;
+    private Long userId;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private String projectRole;
+    private LocalDateTime addedAt;
+    private LocalDateTime updatedAt;
+
 }

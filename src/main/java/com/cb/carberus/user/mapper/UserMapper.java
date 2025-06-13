@@ -6,7 +6,6 @@ import com.cb.carberus.user.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Component;
 
 @Mapper
 public interface UserMapper {

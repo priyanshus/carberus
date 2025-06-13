@@ -1,39 +1,52 @@
 package com.cb.carberus.project.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cb.carberus.user.model.User;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 @Data
-@Document(collection = "projects")
+@Table(name = "projects")
 public class Project {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @JsonProperty("name")
+    @Column(length = 100, nullable = false)
     private String name;
 
+    @Column(length = 255)
     private String description;
-    private String prefix;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
+    @Column(length = 4, nullable = false)
+    private String projectCode;
 
-    @CreatedBy
-    private String createdBy;
-
-    @LastModifiedBy
-    private String lastModifiedBy;
-
+    @Enumerated(EnumType.STRING)
     private ProjectStatus status;
 
-    @JsonProperty("members")
-    private List<ProjectMember> members;
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectMember> members = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if(this.status == null) {
+            this.status = ProjectStatus.ACTIVE;
+        }
+
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
 }

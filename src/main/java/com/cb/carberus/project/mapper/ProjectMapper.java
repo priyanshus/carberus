@@ -1,33 +1,24 @@
 package com.cb.carberus.project.mapper;
 
+
+
+import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
-import com.cb.carberus.project.dto.ProjectMemberDTO;
 import com.cb.carberus.project.model.Project;
-import com.cb.carberus.project.model.ProjectMember;
-import com.cb.carberus.user.dto.UserDTO;
+import com.cb.carberus.user.model.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
+@Mapper
+public interface ProjectMapper {
+    ProjectMapper INSTANCE = Mappers.getMapper( ProjectMapper.class );
 
-public class ProjectMapper {
+    @Mapping(source = "createdBy", target = "createdBy")
+    ProjectDTO toProjectDTO(Project project);
+    Project toProject(AddProjectDTO dto);
 
-    public ProjectDTO toProjectDTO(Project project) {
-        ProjectDTO projectDTO = new ProjectDTO();
-
-        projectDTO.setId(project.getId());
-        projectDTO.setName(project.getName());
-        projectDTO.setCreatedAt(project.getCreatedAt());
-        projectDTO.setDescription(project.getDescription());
-
-        return projectDTO;
+    default Long map(User user) {
+        return user != null ? user.getId() : null;
     }
-
-    public ProjectMemberDTO toProjectMemberDTO(ProjectMember projectMember, UserDTO userDTO) {
-        ProjectMemberDTO memberDTO = new ProjectMemberDTO();
-
-        memberDTO.setProjectRole(projectMember.getProjectRole());
-        memberDTO.setUserDTO(userDTO);
-
-        return memberDTO;
-    }
-
-
 }

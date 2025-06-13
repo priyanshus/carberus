@@ -45,6 +45,4 @@ public class User {
             this.createdAt = LocalDateTime.now();
         }
     }
-
-
 }

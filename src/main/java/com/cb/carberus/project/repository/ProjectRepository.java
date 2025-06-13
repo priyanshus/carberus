@@ -1,12 +1,11 @@
 package com.cb.carberus.project.repository;
 
 import com.cb.carberus.project.model.Project;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-@Repository
-public interface ProjectRepository extends MongoRepository<Project, String>, ProjectCustomRepository {
+public interface ProjectRepository extends CrudRepository<Project, Long> {
     Optional<Project> findByName(String name);
+    Optional<Project> findByProjectCode(String projectCode);
 }

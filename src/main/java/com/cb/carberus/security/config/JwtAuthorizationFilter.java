@@ -75,6 +75,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 .setAuthentication(authToken);
 
         UserRole userRole = getRole(userDetails);
+        userContext.setUser(userDetails.getUser());
         userContext.setRole(userRole);
         userContext.setUserId(userDetails.getUserId());
         filterChain.doFilter(request, response);
