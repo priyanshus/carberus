@@ -33,7 +33,9 @@ public class UserService {
     }
 
     public UserDTO getUser(String userId) {
-        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        Long id = Long.parseLong(userId);
+        var user = userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
         return UserMapper.INSTANCE.toUserDTO(user);
     }
 
@@ -61,21 +63,27 @@ public class UserService {
                 .toList();
     }
 
-    public void addUser(AddUserDTO addUserDTO) {
+    public UserDTO addUser(AddUserDTO addUserDTO) {
+        if (!userContext.getRole().equals(UserRole.ADMIN)) {
+            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
+        }
+
         if (userRepository.findByEmail(addUserDTO.getEmail()).isPresent()) {
             throw new DomainException(DomainErrorCode.EMAIL_ALREADY_TAKEN);
         }
 
         String rawPassword = addUserDTO.getPassword();
-        addUserDTO.setPassword(encoder.encode(rawPassword));
+        String encodedPassword = encoder.encode(rawPassword);
+
+        addUserDTO.setPassword(encodedPassword);
 
         User user = UserMapper.INSTANCE.toUser(addUserDTO);
-        userRepository.save(user);
+        var userSaved = userRepository.save(user);
+
+        return UserMapper.INSTANCE.toUserDTO(userSaved);
     }
 
     public boolean deleteUser(String id) {
-        System.out.println(userContext.getRole());
-        System.out.println(userContext.getUserId());
 
         if (userContext.getRole().equals(UserRole.ADMIN)) {
             var user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);

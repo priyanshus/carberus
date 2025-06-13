@@ -5,6 +5,8 @@ import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
+import com.cb.carberus.errorHandler.error.StandardApiException;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,7 +59,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
         token = extractToken(request);
         if (token == null || token.isEmpty()) {
-            throw new AuthenticationFailedException();
+            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
         Map<String, Object> decodeJwt  = jwtUtil.validateToken(token);

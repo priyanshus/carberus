@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   db:
     image: postgres:17.0-alpine
     container_name: postgres-db
@@ -22,7 +21,7 @@ services:
       FLYWAY_USER: root
       FLYWAY_PASSWORD: root
     volumes:
-      - ./migrations:/flyway/sql
+      - ./src/main/resources/db/migrations:/flyway/sql
     depends_on:
       - db
 

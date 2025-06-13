@@ -1,6 +1,6 @@
 package com.cb.carberus.testcases.service;
 
-import com.cb.carberus.authorization.service.TestCasePermission;
+import com.cb.carberus.authorization.service.AdminPermission;
 import com.cb.carberus.authorization.service.UserPermission;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.UserRole;
@@ -18,7 +18,7 @@ public class TestCaseService {
     private final UserContext userContext;
 
     @Autowired
-    public TestCaseService(TestCaseRepository testCaseRepository, TestCasePermission userPermission,
+    public TestCaseService(TestCaseRepository testCaseRepository, AdminPermission userPermission,
                            UserContext userContext) {
         this.testCaseRepository = testCaseRepository;
         this.userPermission = userPermission;

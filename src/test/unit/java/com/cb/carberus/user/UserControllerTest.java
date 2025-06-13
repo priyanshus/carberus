@@ -9,6 +9,7 @@ import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.security.jwt.JwtUtil;
 import com.cb.carberus.user.controller.UserController;
 import com.cb.carberus.user.dto.AddUserDTO;
+import com.cb.carberus.user.dto.UpdateUserRoleDTO;
 import com.cb.carberus.user.dto.UserDTO;
 import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.service.UserService;
@@ -130,16 +131,17 @@ public class UserControllerTest {
         addUserDTO.setEmail("b@b.com");
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
-        addUserDTO.setUserRole(UserRole.TESTMANAGER);
+        addUserDTO.setUserRole(UserRole.NONADMIN);
         addUserDTO.setPassword("somepassword");
 
-        Mockito.doNothing().when(userService).addUser(ArgumentMatchers.any(AddUserDTO.class));
+        Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO))
                         .cookie(new Cookie("token", jwtToken)))
-                .andExpect(MockMvcResultMatchers.status().isCreated());
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty());
     }
 
     @Test
@@ -150,7 +152,7 @@ public class UserControllerTest {
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
         addUserDTO.setPassword("somepassword");
-        addUserDTO.setUserRole(UserRole.TESTER);
+        addUserDTO.setUserRole(UserRole.NONADMIN);
 
         Mockito.doThrow(new UserAlreadyExistException())
                 .when(userService).addUser(ArgumentMatchers.any(AddUserDTO.class));
@@ -167,9 +169,9 @@ public class UserControllerTest {
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
         addUserDTO.setPassword("somepassword");
-        addUserDTO.setUserRole(UserRole.TESTER);
+        addUserDTO.setUserRole(UserRole.NONADMIN);
 
-        Mockito.doNothing().when(userService).addUser(addUserDTO);
+        Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,9 +185,9 @@ public class UserControllerTest {
         addUserDTO.setEmail("a@a.com");
         addUserDTO.setFirstName("FName");
         addUserDTO.setLastName("lName");
-        addUserDTO.setUserRole(UserRole.TESTER);
+        addUserDTO.setUserRole(UserRole.NONADMIN);
 
-        Mockito.doNothing().when(userService).addUser(addUserDTO);
+        Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -235,7 +237,7 @@ public class UserControllerTest {
     void shouldReturnError_WhenDeleteUserCalledByNonAdminUser() throws Exception {
         String userId = "some-id";
 
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.TESTMANAGER);
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
 
         mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/users/%s", userId))
                         .cookie(new Cookie("token", jwtToken)))
@@ -243,5 +245,20 @@ public class UserControllerTest {
 
     }
 
+    @Test
+    void shouldSuccess_whenUserRoleUpdate() throws Exception {
+        int userId = 12;
 
+        UpdateUserRoleDTO dto = new UpdateUserRoleDTO();
+        dto.setUserRole(UserRole.VIEWER);
+
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+
+        mockMvc.perform(MockMvcRequestBuilders.put(String.format("/users/%d", userId))
+                        .cookie(new Cookie("token", jwtToken))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(new ObjectMapper().writeValueAsString(dto)))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+
+    }
 }

@@ -3,8 +3,6 @@ package com.cb.carberus.user.controller;
 import com.cb.carberus.user.dto.AddUserDTO;
 import com.cb.carberus.user.dto.UpdateUserRoleDTO;
 import com.cb.carberus.user.dto.UserDTO;
-import com.cb.carberus.user.mapper.UserMapper;
-import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,9 +40,9 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<Void> addUser(@Valid  @RequestBody AddUserDTO addUserDTO) {
-        userService.addUser(addUserDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<UserDTO> addUser(@Valid  @RequestBody AddUserDTO addUserDTO) {
+        UserDTO userDTO = userService.addUser(addUserDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
     @GetMapping("/users/{userId}")
@@ -58,7 +56,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody UpdateUserRoleDTO request
     ) {
-        userService.updateUserRole(userId, request.getRole());
+        userService.updateUserRole(userId, request.getUserRole());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

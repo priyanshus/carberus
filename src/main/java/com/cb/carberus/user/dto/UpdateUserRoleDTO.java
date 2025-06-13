@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 public class UpdateUserRoleDTO {
     @NotNull
-    private UserRole role;
+    private UserRole userRole;
 }

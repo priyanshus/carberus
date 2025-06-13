@@ -48,7 +48,8 @@ public class UserServiceTest {
         user.setId(1L);
         user.setEmail("test@example.com");
 
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findById(1L))
+                .thenReturn(Optional.of(user));
 
         UserDTO result = userService.getUser("1");
 
@@ -138,7 +139,7 @@ public class UserServiceTest {
 
     @Test
     void testDeleteUser_notAdmin() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.TESTER);
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
         Assertions.assertThrows(StandardApiException.class, () -> userService.deleteUser("1"));
     }
 
@@ -156,7 +157,7 @@ public class UserServiceTest {
 
     @Test
     void testUpdateUserRole_notAdmin() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.TESTER);
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
         Assertions.assertThrows(StandardApiException.class, () -> userService.updateUserRole("1", UserRole.ADMIN));
     }
 }

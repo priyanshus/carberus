@@ -2,6 +2,7 @@ package com.cb.carberus.project;
 
 import com.cb.carberus.authorization.service.ProjectPermission;
 import com.cb.carberus.config.UserContext;
+import com.cb.carberus.constants.ProjectRole;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
@@ -76,7 +77,7 @@ public class ProjectServiceTest {
     @Test
     void addProject_shouldSaveProject_whenValidAndAuthorized() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findAll()).thenReturn(List.of());
 
         projectService.addProject(addProjectDTO);
@@ -86,8 +87,8 @@ public class ProjectServiceTest {
 
     @Test
     void addProject_shouldThrowError_WhenRoleIsNonAdmin() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.TESTMANAGER);
-        Mockito.when(projectPermission.canAdd(UserRole.TESTMANAGER)).thenReturn(false);
+        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(false);
 
         StandardApiException ex = Assertions.assertThrows(StandardApiException.class,
                 () -> projectService.addProject(addProjectDTO));
@@ -98,7 +99,7 @@ public class ProjectServiceTest {
     @Test
     void addProject_shouldThrow_whenNameAlreadyExists() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
 
         Project duplicate = new Project();
         duplicate.setName("New Project");
@@ -115,7 +116,7 @@ public class ProjectServiceTest {
     @Test
     void addProject_shouldThrow_whenPrefixAlreadyExists() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
 
         Project duplicate = new Project();
         duplicate.setName("some-project");
@@ -133,7 +134,7 @@ public class ProjectServiceTest {
     @Test
     void updateProject_shouldUpdate_whenAuthorizedAndActive() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
 
         projectService.updateProject(updateProjectDTO);
@@ -147,7 +148,7 @@ public class ProjectServiceTest {
         existingProject.setStatus(ProjectStatus.ARCHIVED);
 
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
 
         DomainException ex = Assertions.assertThrows(DomainException.class,
@@ -159,7 +160,7 @@ public class ProjectServiceTest {
     @Test
     void changeProjectStatus_shouldUpdate_whenDifferent() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canAdd(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canAdd(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
 
         projectService.changeProjectStatus("p1", statusDTO);
@@ -171,7 +172,7 @@ public class ProjectServiceTest {
     @Test
     void getProjects_shouldReturn_whenAuthorized() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canView(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findAll()).thenReturn(List.of(existingProject));
 
         List<ProjectDTO> projects = projectService.getProjects();
@@ -181,7 +182,7 @@ public class ProjectServiceTest {
     @Test
     void getProject_shouldReturn_whenExists() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canView(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findById("p1")).thenReturn(Optional.of(existingProject));
 
         Project p = projectService.getProject("p1");
@@ -191,7 +192,7 @@ public class ProjectServiceTest {
     @Test
     void getProject_shouldThrow_whenNotFound() {
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(projectPermission.canView(UserRole.ADMIN)).thenReturn(true);
+        Mockito.when(projectPermission.canView(ProjectRole.VIEWER)).thenReturn(true);
         Mockito.when(projectRepository.findById("bad-id")).thenReturn(Optional.empty());
 
         Assertions.assertThrows(StandardApiException.class,

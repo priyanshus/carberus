@@ -1,7 +1,6 @@
 package com.cb.carberus.project.service;
 
-import com.cb.carberus.authorization.service.ProjectPermission;
-import com.cb.carberus.authorization.service.UserPermission;
+import com.cb.carberus.authorization.service.AdminPermission;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
@@ -25,13 +24,13 @@ public class ProjectService {
     @Autowired
     private final ProjectRepository projectRepository;
     private final UserContext userContext;
-    private final UserPermission userPermission;
+    private final AdminPermission adminPermission;
 
     @Autowired
-    public ProjectService(ProjectRepository projectRepository, UserContext userContext, ProjectPermission userPermission) {
+    public ProjectService(ProjectRepository projectRepository, UserContext userContext, AdminPermission adminPermission) {
         this.projectRepository = projectRepository;
         this.userContext = userContext;
-        this.userPermission = userPermission;
+        this.adminPermission = adminPermission;
     }
 
     private UserRole getCurrentRole() {
@@ -44,7 +43,7 @@ public class ProjectService {
 
     public void addProject(AddProjectDTO dto) {
         var role = getCurrentRole();
-        var canAdd = userPermission.canAdd(role);
+        var canAdd = adminPermission.canAdd(role);
 
         if(!canAdd) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
@@ -74,7 +73,7 @@ public class ProjectService {
 
     public void updateProject(UpdateProjectDTO dto) {
         var role = getCurrentRole();
-        var canAdd = userPermission.canAdd(role);
+        var canAdd = adminPermission.canAdd(role);
 
         if(!canAdd) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
@@ -94,7 +93,7 @@ public class ProjectService {
 
     public void changeProjectStatus(String projectId, ChangeProjectStatusDTO dto) {
         var role = getCurrentRole();
-        var canAdd = userPermission.canAdd(role);
+        var canAdd = adminPermission.canAdd(role);
 
         if(!canAdd) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
@@ -112,7 +111,7 @@ public class ProjectService {
 
     public List<ProjectDTO> getProjects() {
         var role = getCurrentRole();
-        var canView = userPermission.canView(role);
+        var canView = adminPermission.canView(role);
 
         if(!canView) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
@@ -124,7 +123,7 @@ public class ProjectService {
 
     public Project getProject(String id) {
         var role = getCurrentRole();
-        var canView = userPermission.canView(role);
+        var canView = adminPermission.canView(role);
         if(!canView) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }

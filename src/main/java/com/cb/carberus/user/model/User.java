@@ -1,7 +1,6 @@
 package com.cb.carberus.user.model;
 
 import com.cb.carberus.constants.UserRole;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Data;
 

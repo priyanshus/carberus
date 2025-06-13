@@ -42,7 +42,7 @@ public class JwtUtil {
 
     public Map<String, Object> validateToken(String token) {
         if (token.isEmpty()) {
-            throw new AuthenticationFailedException();
+            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
 
@@ -53,7 +53,7 @@ public class JwtUtil {
         try {
             decodedJwt = verifier.verify(token);
         }catch (JWTVerificationException e) {
-            throw new AuthenticationFailedException();
+            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
 

@@ -1,5 +1,5 @@
 server:
-  port: 10002
+  port: 10001
   servlet:
     context-path: /api/v1
 
@@ -20,3 +20,5 @@ spring:
 logging:
   level:
     org.springframework.security: info
+    org.flywaydb.core: DEBUG
+    org.springframework.boot.autoconfigure.flyway: DEBUG

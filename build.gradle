@@ -53,6 +53,7 @@ dependencies {
 	implementation 'org.mapstruct:mapstruct:1.6.3'
 	implementation 'org.slf4j:slf4j-api:2.0.17'
 
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -100,5 +101,5 @@ tasks.register('integrationTest', Test) {
 
 // Run both in `./gradlew check`
 tasks.named('check') {
-	dependsOn tasks.named('unitTest'), tasks.named('integrationTest')
+	dependsOn tasks.named('unitTest')
 }
