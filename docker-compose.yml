@@ -1,21 +1,30 @@
+version: '3.8'
+
 services:
 
-  mongo:
-    image: mongo
-    restart: always
-    ports:
-      - 27017:27017
+  db:
+    image: postgres:17.0-alpine
+    container_name: postgres-db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: carberus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
+  migrate:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://db:5432/carberus -user=root -password=root -connectRetries=60 migrate
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: root
-      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
-      ME_CONFIG_BASICAUTH: false
+      FLYWAY_URL: jdbc:postgresql://db:5432/carberus
+      FLYWAY_USER: root
+      FLYWAY_PASSWORD: root
+    volumes:
+      - ./migrations:/flyway/sql
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

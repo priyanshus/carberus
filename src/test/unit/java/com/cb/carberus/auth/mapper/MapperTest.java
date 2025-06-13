@@ -1,14 +1,12 @@
 package com.cb.carberus.auth.mapper;
 
 import com.cb.carberus.auth.dto.SignupRequestDTO;
-import com.cb.carberus.constants.Role;
-import com.cb.carberus.user.dto.UserResponseDTO;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.user.model.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.mockito.Mockito;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,31 +20,31 @@ public class MapperTest {
         dto.setRole("ADMIN");
 
         BCryptPasswordEncoder encoder =
-                mock(BCryptPasswordEncoder.class);
-        when(encoder.encode("plainPassword")).thenReturn("encodedPassword");
+                Mockito.mock(BCryptPasswordEncoder.class);
+        Mockito.when(encoder.encode("plainPassword")).thenReturn("encodedPassword");
 
-        User user = Mapper.toUser(dto, encoder);
+        com.cb.carberus.user.model.User user = Mapper.toUser(dto, encoder);
 
         Assertions.assertEquals("user@example.com", user.getEmail());
         Assertions.assertEquals("encodedPassword", user.getPassword());
         Assertions.assertNotNull(user.getCreatedAt());
-        Assertions.assertEquals(user.getRole(), Role.ADMIN);
+        Assertions.assertEquals(user.getUserRole(), UserRole.ADMIN);
     }
 
     @Test
     void shouldMapUserToCurrentUserResponseDtoCorrectly() {
-        User user = new User();
-        user.setId("some-id");
+        com.cb.carberus.user.model.User user = new com.cb.carberus.user.model.User();
+        user.setId(Long.getLong("12343"));
         user.setEmail("user@example.com");
         user.setCreatedAt(java.time.LocalDateTime.now());
-        user.setRole(Role.ADMIN);
+        user.setUserRole(UserRole.ADMIN);
 
-        UserResponseDTO dto = Mapper.toCurrentUserResponse(user);
+        User dto = Mapper.toCurrentUserResponse(user);
 
         Assertions.assertEquals("some-id", dto.getId());
         Assertions.assertEquals("user@example.com", dto.getEmail());
         Assertions.assertEquals(user.getCreatedAt(), dto.getCreatedAt());
-        Assertions.assertTrue(dto.getRole().contains("ADMIN"));
+        Assertions.assertEquals(dto.getUserRole(), UserRole.ADMIN);
     }
 
     @Test
@@ -57,8 +55,8 @@ public class MapperTest {
         dto.setRole("");
 
         BCryptPasswordEncoder encoder =
-                mock(BCryptPasswordEncoder.class);
-        when(encoder.encode("password")).thenReturn("encoded");
+                Mockito.mock(BCryptPasswordEncoder.class);
+        Mockito.when(encoder.encode("password")).thenReturn("encoded");
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> Mapper.toUser(dto, encoder));
     }
@@ -71,8 +69,8 @@ public class MapperTest {
         dto.setRole("INVALID_ROLE");
 
        BCryptPasswordEncoder encoder =
-                mock(BCryptPasswordEncoder.class);
-        when(encoder.encode("password")).thenReturn("encoded");
+                Mockito.mock(BCryptPasswordEncoder.class);
+        Mockito.when(encoder.encode("password")).thenReturn("encoded");
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Mapper.toUser(dto, encoder);

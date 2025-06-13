@@ -1,6 +1,6 @@
 package com.cb.carberus.config;
 
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -9,10 +9,10 @@ import org.springframework.web.context.WebApplicationContext;
 @Component
 @Scope(value = WebApplicationContext.SCOPE_REQUEST,  proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class UserContext {
-    private Role role;
-    private String userId;
+    private UserRole role;
+    private Long userId;
 
-    public void setRole(Role role) {
+    public void setRole(UserRole role) {
         if (this.role != null) {
             throw new IllegalStateException("hasRoles can only be set once");
         }
@@ -20,7 +20,7 @@ public class UserContext {
         this.role = role;
     }
 
-    public Role getRole() {
+    public UserRole getRole() {
         if (this.role == null) {
             throw new IllegalStateException("hasRoles not initialized");
         }
@@ -28,7 +28,7 @@ public class UserContext {
         return this.role;
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         if (this.userId == null) {
             throw new IllegalStateException("userId not initialized");
         }
@@ -36,7 +36,7 @@ public class UserContext {
         return this.userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         if (this.userId != null) {
             throw new IllegalStateException("userId can only be set once");
         }

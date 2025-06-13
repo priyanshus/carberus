@@ -16,7 +16,7 @@ public class AuditConfig {
     }
 
     @Bean
-    public AuditorAware<String> auditorProvider() {
+    public AuditorAware<Long> auditorProvider() {
         return new AuditAwareImplementation(this.userContext);
     }
 }

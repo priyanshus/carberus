@@ -1,6 +1,6 @@
 package com.cb.carberus.project.service;
 
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.model.DomainErrorCode;
 import com.cb.carberus.project.model.Project;
@@ -36,13 +36,13 @@ public class ProjectMemberService {
 
         boolean updated = false;
 
-        for (ProjectMember member : project.getMembers()) {
-            if (member.getUserDetails().getId().equals(memberId)) {
-                member.setProjectRole(Role.NOACCESS);
-                updated = true;
-                break;
-            }
-        }
+//        for (ProjectMember member : project.getMembers()) {
+//            if (member.getUserDetails().getId().equals(memberId)) {
+//                member.setProjectRole(UserRole.NOACCESS);
+//                updated = true;
+//                break;
+//            }
+//        }
 
         if (!updated) {
             throw new DomainException(DomainErrorCode.PROJECT_MEMBER_NOT_FOUND);

@@ -1,11 +1,8 @@
 package com.cb.carberus.auth.dto;
 
-import com.cb.carberus.constants.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class SignupRequestDTO {

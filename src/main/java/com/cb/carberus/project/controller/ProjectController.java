@@ -2,6 +2,7 @@ package com.cb.carberus.project.controller;
 
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ChangeProjectStatusDTO;
+import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.model.Project;
 import com.cb.carberus.project.service.ProjectService;
@@ -24,7 +25,7 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> getProjects() {
+    public ResponseEntity<List<ProjectDTO>> getProjects() {
         var projects =  projectService.getProjects();
         return ResponseEntity.ok(projects);
     }

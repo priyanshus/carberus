@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class SignupResponseDTO {
     private String message;
     private String email;
-    private String id;
+    private Long id;
 }

@@ -1,6 +1,6 @@
 package com.cb.carberus.constants;
 
-public enum Role {
+public enum UserRole {
     ADMIN,
     VIEWER,
     TESTER,

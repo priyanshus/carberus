@@ -2,12 +2,16 @@ package com.cb.carberus.user.controller;
 
 import com.cb.carberus.user.dto.AddUserDTO;
 import com.cb.carberus.user.dto.UpdateUserRoleDTO;
-import com.cb.carberus.user.dto.UserResponseDTO;
+import com.cb.carberus.user.dto.UserDTO;
+import com.cb.carberus.user.mapper.UserMapper;
+import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -18,8 +22,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getMe() {
-            UserResponseDTO user = userService.getCurrentUser();
+    public ResponseEntity<UserDTO> getMe() {
+        var user = userService.getCurrentUser();
         return ResponseEntity.ok(user);
     }
 
@@ -32,20 +36,19 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<UserResponseDTO[]> getUsers() {
+    public ResponseEntity<List<UserDTO>> getUsers() {
         var users =  userService.getUsers();
         return ResponseEntity.ok(users);
     }
 
     @PostMapping("/users")
     public ResponseEntity<Void> addUser(@Valid  @RequestBody AddUserDTO addUserDTO) {
-        System.out.println(addUserDTO);
         userService.addUser(addUserDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<UserResponseDTO> getUser(@PathVariable String userId) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable String userId) {
         var user = userService.getUser(userId);
         return ResponseEntity.ok(user);
     }

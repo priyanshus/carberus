@@ -1,10 +1,10 @@
 package com.cb.carberus.authorization.service;
 
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 
 public interface UserPermission {
-    boolean canAdd(Role role);
-    boolean canEdit(Role role);
-    boolean canDelete(Role role);
-    boolean canView(Role role);
+    boolean canAdd(UserRole role);
+    boolean canEdit(UserRole role);
+    boolean canDelete(UserRole role);
+    boolean canView(UserRole role);
 }

@@ -1,27 +1,27 @@
 package com.cb.carberus.authorization.service;
 
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectPermission implements UserPermission{
     @Override
-    public boolean canAdd(Role role) {
-        return role.equals(Role.ADMIN);
+    public boolean canAdd(UserRole role) {
+        return role.equals(UserRole.ADMIN);
     }
 
     @Override
-    public boolean canEdit(Role role) {
-        return role.equals(Role.ADMIN);
+    public boolean canEdit(UserRole role) {
+        return role.equals(UserRole.ADMIN);
     }
 
     @Override
-    public boolean canDelete(Role role) {
-        return role.equals(Role.ADMIN);
+    public boolean canDelete(UserRole role) {
+        return role.equals(UserRole.ADMIN);
     }
 
     @Override
-    public boolean canView(Role role) {
-        return role.equals(Role.ADMIN);
+    public boolean canView(UserRole role) {
+        return role.equals(UserRole.ADMIN);
     }
 }

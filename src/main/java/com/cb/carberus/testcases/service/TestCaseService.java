@@ -3,15 +3,13 @@ package com.cb.carberus.testcases.service;
 import com.cb.carberus.authorization.service.TestCasePermission;
 import com.cb.carberus.authorization.service.UserPermission;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.testcases.dto.TestCaseDTO;
 import com.cb.carberus.testcases.repository.TestCaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class TestCaseService {
@@ -27,7 +25,7 @@ public class TestCaseService {
         this.userContext = userContext;
     }
 
-    private Role currentRole() {
+    private UserRole currentRole() {
         return userContext.getRole();
     }
 

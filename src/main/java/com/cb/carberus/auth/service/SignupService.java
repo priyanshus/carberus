@@ -19,7 +19,7 @@ public class SignupService {
 
     public SignupResponseDTO handleSignup(SignupRequestDTO dto) {
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            return new SignupResponseDTO("Email already exists", dto.getEmail(), "");
+            return new SignupResponseDTO("Email already exists", dto.getEmail(), Long.getLong("12838"));
         }
 
         var user = Mapper.toUser(dto, encoder); // converts DTO to model

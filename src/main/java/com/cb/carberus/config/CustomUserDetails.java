@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
-    private final String id;
+    private final Long id;
     private final String username;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
@@ -20,14 +20,14 @@ public class CustomUserDetails implements UserDetails {
         this.username = user.getEmail();
         this.password = user.getPassword();
 
-        if (user.getRole() == null) {
+        if (user.getUserRole() == null) {
             throw new UserNotFoundException();
         }
 
-        this.authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
+        this.authorities = List.of(new SimpleGrantedAuthority(user.getUserRole().name()));
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         return id;
     }
 

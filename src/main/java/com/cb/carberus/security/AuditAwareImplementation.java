@@ -6,7 +6,7 @@ import org.springframework.data.domain.AuditorAware;
 
 import java.util.Optional;
 
-public class AuditAwareImplementation implements AuditorAware<String> {
+public class AuditAwareImplementation implements AuditorAware<Long> {
     private final UserContext userContext;
 
     @Autowired
@@ -15,7 +15,7 @@ public class AuditAwareImplementation implements AuditorAware<String> {
     }
 
     @Override
-    public Optional<String> getCurrentAuditor() {
+    public Optional<Long> getCurrentAuditor() {
         return Optional.of(userContext.getUserId());
     }
 }

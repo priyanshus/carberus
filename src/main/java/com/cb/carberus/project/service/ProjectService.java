@@ -3,13 +3,14 @@ package com.cb.carberus.project.service;
 import com.cb.carberus.authorization.service.ProjectPermission;
 import com.cb.carberus.authorization.service.UserPermission;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.errorHandler.model.DomainErrorCode;
 import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ChangeProjectStatusDTO;
+import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.model.Project;
 import com.cb.carberus.project.model.ProjectStatus;
@@ -33,11 +34,11 @@ public class ProjectService {
         this.userPermission = userPermission;
     }
 
-    private Role getCurrentRole() {
+    private UserRole getCurrentRole() {
         return userContext.getRole();
     }
 
-    private String getUserId() {
+    private Long getUserId() {
         return userContext.getUserId();
     }
 
@@ -109,14 +110,16 @@ public class ProjectService {
         }
     }
 
-    public List<Project> getProjects() {
+    public List<ProjectDTO> getProjects() {
         var role = getCurrentRole();
         var canView = userPermission.canView(role);
+
         if(!canView) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
-        return projectRepository.findAll();
+        return List.of(new ProjectDTO());
+        //return projectRepository.findAll();
     }
 
     public Project getProject(String id) {

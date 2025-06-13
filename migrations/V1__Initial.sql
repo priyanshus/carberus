@@ -1,0 +1,27 @@
+-- init.sql
+CREATE TABLE system_users (
+  id SERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  hashed_password TEXT NOT NULL,
+  first_name TEXT,
+  last_name TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login TIMESTAMP
+);
+
+CREATE TABLE projects (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  prefix TEXT NOT NULL,
+  owner_id INTEGER NOT NULL REFERENCES system_users(id),
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+

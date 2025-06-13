@@ -3,7 +3,7 @@ package com.cb.carberus.security.config;
 import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.AuthenticationFailedException;
 import com.cb.carberus.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -72,19 +72,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext()
                 .setAuthentication(authToken);
 
-        Role userRole = getRole(userDetails);
+        UserRole userRole = getRole(userDetails);
         userContext.setRole(userRole);
         userContext.setUserId(userDetails.getUserId());
         filterChain.doFilter(request, response);
     }
 
-    private Role getRole(UserDetails userDetails) {
+    private UserRole getRole(UserDetails userDetails) {
         return userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority) // e.g., "ADMIN"
                 .map(String::toUpperCase)            // match enum casing if needed
                 .map(roleStr -> {
                     try {
-                        return Role.valueOf(roleStr);
+                        return UserRole.valueOf(roleStr);
                     } catch (IllegalArgumentException e) {
                         return null;
                     }

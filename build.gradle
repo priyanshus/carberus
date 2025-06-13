@@ -13,10 +13,27 @@ java {
 	}
 }
 
+sourceSets {
+	unitTests {
+		java.srcDir file('src/test/unit/java')
+		resources.srcDir file('src/test/unit/resources')
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
+	}
+	integrationTest {
+		java.srcDir file('src/test/integration/java')
+		resources.srcDir file('src/test/integration/resources')
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
+	}
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	unitTestsImplementation.extendsFrom testImplementation
+	integrationTestImplementation.extendsFrom testImplementation
 }
 
 repositories {
@@ -25,20 +42,63 @@ repositories {
 }
 
 dependencies {
+	// Main dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.postgresql:postgresql'
+	implementation 'com.auth0:java-jwt:4.5.0'
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	implementation 'org.slf4j:slf4j-api:2.0.17'
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	implementation 'org.slf4j:slf4j-api:2.0.17'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.mockito:mockito-inline:5.2.0'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.auth0:java-jwt:4.5.0'
+
+	// MapStruct
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+	// Unit test dependencies
+	unitTestsImplementation 'org.springframework.boot:spring-boot-starter-test'
+	unitTestsImplementation 'org.springframework.security:spring-security-test'
+	unitTestsImplementation 'org.mockito:mockito-inline:5.2.0'
+	unitTestsRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	unitTestsAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+	// Integration test dependencies
+	integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+	integrationTestImplementation 'org.springframework.security:spring-security-test'
+	integrationTestImplementation 'org.mockito:mockito-inline:5.2.0'
+	integrationTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	integrationTestAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 }
 
+// Default test task
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Unit Test Task
+tasks.register('unitTest', Test) {
+	description = 'Runs unit tests.'
+	group = 'verification'
+	testClassesDirs = sourceSets.unitTests.output.classesDirs
+	classpath = sourceSets.unitTests.runtimeClasspath
+	useJUnitPlatform()
+}
+
+// Integration Test Task
+tasks.register('integrationTest', Test) {
+	description = 'Runs integration tests.'
+	group = 'verification'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	useJUnitPlatform()
+}
+
+// Run both in `./gradlew check`
+tasks.named('check') {
+	dependsOn tasks.named('unitTest'), tasks.named('integrationTest')
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -46,14 +47,14 @@ public class AuthServiceTest {
         mockLoginRequest.setEmail(email);
         mockLoginRequest.setPassword(rawPassword);
 
-        CustomUserDetails userDetails = mock(CustomUserDetails.class);
+        CustomUserDetails userDetails = Mockito.mock(CustomUserDetails.class);
 
-        when(authUserDetailsService.loadUserByUsername(email))
+        Mockito.when(authUserDetailsService.loadUserByUsername(email))
                 .thenReturn(userDetails);
 
-        when(userDetails.getPassword()).thenReturn("encodedPassword");
-        when(passwordEncoder.matches(rawPassword, "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken(userDetails)).thenReturn("some-token");
+        Mockito.when(userDetails.getPassword()).thenReturn("encodedPassword");
+        Mockito.when(passwordEncoder.matches(rawPassword, "encodedPassword")).thenReturn(true);
+        Mockito.when(jwtUtil.generateToken(userDetails)).thenReturn("some-token");
 
         // Act
         String jwtToken = authService.authenticate(mockLoginRequest);
@@ -72,16 +73,16 @@ public class AuthServiceTest {
         mockLoginRequest.setEmail(email);
         mockLoginRequest.setPassword(rawPassword);
 
-        CustomUserDetails userDetails = mock(CustomUserDetails.class);
+        CustomUserDetails userDetails = Mockito.mock(CustomUserDetails.class);
 
-        when(authUserDetailsService.loadUserByUsername(email))
+        Mockito.when(authUserDetailsService.loadUserByUsername(email))
                 .thenReturn(userDetails);
 
-        when(userDetails.getPassword()).thenReturn("encodedPassword");
-        when(passwordEncoder.matches(rawPassword, "encodedPassword")).thenReturn(false);
+        Mockito.when(userDetails.getPassword()).thenReturn("encodedPassword");
+        Mockito.when(passwordEncoder.matches(rawPassword, "encodedPassword")).thenReturn(false);
 
         // Act
-        assertThrows(AuthenticationFailedException.class, () -> {
+        Assertions.assertThrows(AuthenticationFailedException.class, () -> {
             authService.authenticate(mockLoginRequest);
         });
     }

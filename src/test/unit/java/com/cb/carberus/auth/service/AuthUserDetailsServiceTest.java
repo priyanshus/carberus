@@ -1,7 +1,7 @@
 package com.cb.carberus.auth.service;
 
 import com.cb.carberus.config.UserContext;
-import com.cb.carberus.constants.Role;
+import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.UserNotFoundException;
 import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.repository.UserRepository;
@@ -9,11 +9,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -31,9 +30,9 @@ public class AuthUserDetailsServiceTest {
         User mockUser = new User();
         mockUser.setEmail("user@example.com");
         mockUser.setPassword("encodedPassword");
-        mockUser.setRole(Role.ADMIN);
+        mockUser.setUserRole(UserRole.ADMIN);
 
-        when(userRepository.findByEmail("user@example.com"))
+        Mockito.when(userRepository.findByEmail("user@example.com"))
                 .thenReturn(Optional.of(mockUser));
 
         UserDetails userDetails =
@@ -47,7 +46,7 @@ public class AuthUserDetailsServiceTest {
 
     @Test
     void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
-        when(userRepository.findByEmail("notfound@example.com"))
+        Mockito.when(userRepository.findByEmail("notfound@example.com"))
                 .thenReturn(Optional.empty());
 
         AuthUserDetailsService service = new AuthUserDetailsService(userRepository);
@@ -63,7 +62,7 @@ public class AuthUserDetailsServiceTest {
         mockUser.setEmail("user@example.com");
         mockUser.setPassword("encodedPassword");
 
-        when(userRepository.findByEmail("user@example.com"))
+        Mockito.when(userRepository.findByEmail("user@example.com"))
                 .thenReturn(Optional.of(mockUser));
 
         AuthUserDetailsService service = new AuthUserDetailsService(userRepository);

@@ -1,15 +1,21 @@
 server:
-  port: 10001
+  port: 10002
   servlet:
     context-path: /api/v1
 
 spring:
   application:
     name: carberus
-  data:
-    mongodb:
-      uri: mongodb://root:root@localhost:27017/admin?retryWrites=true&w=majority
-      database: carberus
+  datasource:
+    url: jdbc:postgresql://localhost:5432/carberus
+    username: root
+    password: root
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
   
 logging:
   level:
