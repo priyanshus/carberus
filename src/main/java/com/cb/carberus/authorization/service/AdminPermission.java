@@ -8,7 +8,7 @@ public class AdminPermission implements UserPermission<UserRole> {
 
     @Override
     public boolean canAdd(UserRole role) {
-        return !role.equals(UserRole.ADMIN);
+        return role.equals(UserRole.ADMIN);
     }
 
     @Override
@@ -24,6 +24,10 @@ public class AdminPermission implements UserPermission<UserRole> {
     @Override
     public boolean canView(UserRole role) {
         return true;
+    }
+
+    public boolean canAddProjectMember(UserRole role) {
+        return role.equals(UserRole.ADMIN);
     }
 
     public boolean canComment(UserRole role) {

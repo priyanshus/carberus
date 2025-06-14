@@ -1,48 +1,60 @@
 package com.cb.carberus.project;
 
 import com.cb.carberus.authorization.service.AdminPermission;
+import com.cb.carberus.authorization.service.ProjectPermission;
 import com.cb.carberus.config.UserContext;
+import com.cb.carberus.constants.ProjectRole;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
+import com.cb.carberus.project.dto.ProjectMemberDTO;
 import com.cb.carberus.project.model.Project;
+import com.cb.carberus.project.model.ProjectMember;
 import com.cb.carberus.project.model.ProjectStatus;
 import com.cb.carberus.project.repository.ProjectRepository;
 import com.cb.carberus.project.service.ProjectService;
 import com.cb.carberus.user.model.User;
+import com.cb.carberus.user.repository.UserRepository;
+import com.cb.carberus.util.TestMockObjectUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProjectServiceTest {
-
     @Mock
     private ProjectRepository projectRepository;
+    @Mock
+    private UserRepository userRepository;
     @Mock
     private UserContext userContext;
     @Mock
     private AdminPermission adminPermission;
 
+    @Mock
+    private ProjectPermission projectPermission;
+
     @InjectMocks
     private ProjectService projectService;
 
     private AddProjectDTO addProjectDTO;
+    private ProjectMemberDTO projectMemberDTO;
     private Project existingProject;
 
     @BeforeEach
@@ -61,6 +73,14 @@ public class ProjectServiceTest {
         existingProject.setName("some-project");
         existingProject.setProjectCode("SOME");
         existingProject.setStatus(ProjectStatus.ACTIVE);
+        existingProject.setMembers(new ArrayList<>());
+
+        projectMemberDTO = ProjectMemberDTO
+                .builder()
+                .userId(10L)
+                .projectRole("tester")
+                .build();
+
     }
 
 
@@ -70,7 +90,7 @@ public class ProjectServiceTest {
         project.setName("some-project");
         project.setDescription("some-desc");
 
-        Mockito.when(projectRepository.findAll()).thenReturn(
+        when(projectRepository.findAll()).thenReturn(
                 List.of(project)
         );
 
@@ -84,7 +104,7 @@ public class ProjectServiceTest {
 
     @Test
     void getProjects_ShouldBringNoProjectsWhenThereIsNoProjectInDB() {
-        Mockito.when(projectRepository.findAll()).thenReturn(List.of());
+        when(projectRepository.findAll()).thenReturn(List.of());
 
         // Act
         List<ProjectDTO> projectDTOList = projectService.getAllProjects();
@@ -100,7 +120,7 @@ public class ProjectServiceTest {
         project.setStatus(ProjectStatus.ACTIVE);
         project.setDescription("some-desc");
 
-        Mockito.when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
 
         // Act
         ProjectDTO projectDTO = projectService.getProject("1234");
@@ -113,7 +133,7 @@ public class ProjectServiceTest {
 
     @Test
     void getProject_ShouldThrowExceptionProjectNotFound_WhenProjectIDDoesNotMatch() {
-        Mockito.when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // Assert
         assertThrows(DomainException.class, () -> projectService.getProject("9183903"));
@@ -122,38 +142,37 @@ public class ProjectServiceTest {
 
     @Test
     void addProject_shouldSaveProject_whenValidAndAuthorized() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(adminPermission.canAdd(Mockito.any()))
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
                 .thenReturn(true);
-        Mockito.when(projectRepository.findByName("some-project"))
+        when(projectRepository.findByName("some-project"))
                 .thenReturn(Optional.empty());
-        Mockito.when(projectRepository.findByProjectCode("SOME"))
+        when(projectRepository.findByProjectCode("SOME"))
                 .thenReturn(Optional.empty());
-        Mockito.when(userContext.getUser()).thenReturn(new User());
-        Mockito.when(projectRepository.save(Mockito.any()))
+        when(userContext.getUser()).thenReturn(new User());
+        when(projectRepository.save(any()))
                 .thenReturn(existingProject);
 
         // Act
         ProjectDTO result = projectService.addProject(addProjectDTO);
 
         // Assert
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
         Assertions.assertEquals("some-project", result.getName());
         Assertions.assertEquals("SOME", result.getProjectCode());
         Assertions.assertEquals("some-desc", result.getDescription());
         Assertions.assertEquals("ACTIVE", result.getStatus());
-        Assertions.assertNotNull(result.getCreatedAt());
+        assertNotNull(result.getCreatedAt());
 
-        Mockito.verify(projectRepository).save(Mockito.any(Project.class));
+        verify(projectRepository).save(any(Project.class));
     }
 
 
     @Test
     void addProject_shouldThrowException_whenNonAdminSavesProject() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
-        Mockito.when(adminPermission.canAdd(Mockito.any()))
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        when(adminPermission.canAdd(any()))
                 .thenReturn(false);
-
 
         // Act
         Exception ex = assertThrows(StandardApiException.class, () -> projectService.addProject(addProjectDTO));
@@ -164,11 +183,11 @@ public class ProjectServiceTest {
 
     @Test
     void addProject_shouldThrowException_whenDuplicateNameUsed() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(adminPermission.canAdd(Mockito.any()))
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
                 .thenReturn(true);
 
-        Mockito.when(projectRepository.findByName("some-project"))
+        when(projectRepository.findByName("some-project"))
                 .thenReturn(Optional.of(existingProject));
 
 
@@ -181,11 +200,11 @@ public class ProjectServiceTest {
 
     @Test
     void addProject_shouldThrowException_whenDuplicateProjectCodeUsed() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(adminPermission.canAdd(Mockito.any()))
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
                 .thenReturn(true);
 
-        Mockito.when(projectRepository.findByProjectCode("SOME"))
+        when(projectRepository.findByProjectCode("SOME"))
                 .thenReturn(Optional.of(existingProject));
 
         // Act
@@ -193,5 +212,177 @@ public class ProjectServiceTest {
 
         // Assert
         assertTrue(ex.getMessage().contains("PREFIX_ALREADY_EXIST"));
+    }
+
+    @Test
+    void addProjectMember_shouldSaveProject_whenRequesterIsSystemAdmin() {
+        // Arrange
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(projectRepository.findById(100L)).thenReturn(Optional.of(existingProject));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(TestMockObjectUtil.getUser()));
+
+        // Act
+        List<ProjectMemberDTO> result = projectService.addProjectMember("100", projectMemberDTO);
+
+        // Assert
+        assertNotNull(result, "Returned member list should not be null");
+        assertEquals(1, result.size(), "Should contain exactly one project member");
+
+        verify(projectRepository, times(1)).save(any(Project.class));
+        verify(userRepository, times(1)).findById(projectMemberDTO.getUserId());
+        verify(projectRepository).findById(100L);
+    }
+
+    @Test
+    void addProjectMember_shouldSaveProject_whenRequesterIsProjectAdmin() {
+        when(projectPermission.canAddProjectMember(any())).thenReturn(true);
+        when(userContext.getUserId()).thenReturn(123L);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.ADMIN,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+        ProjectMember existingMember = TestMockObjectUtil.projectMember(
+                ProjectRole.TESTER,
+                TestMockObjectUtil.getUser(125L, "existing@mail.com", UserRole.NONADMIN)
+        );
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember, existingMember);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(TestMockObjectUtil.getUser()));
+
+        // Act
+        List<ProjectMemberDTO> result = projectService.addProjectMember("100", projectMemberDTO);
+
+
+        // Assert
+        assertNotNull(result, "Returned member list should not be null");
+        assertEquals(3, result.size(), "Should contain exactly three project members");
+
+        verify(projectRepository, times(1)).save(any(Project.class));
+        verify(userRepository, times(1)).findById(projectMemberDTO.getUserId());
+        verify(projectRepository).findById(100L);
+        verify(projectPermission).canAddProjectMember(ProjectRole.ADMIN);
+    }
+
+
+    @Test
+    void addProjectMember_shouldSaveProject_whenRequesterIsProjectManager() {
+        when(projectPermission.canAddProjectMember(any())).thenReturn(true);
+        when(userContext.getUserId()).thenReturn(123L);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.MANAGER,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+        ProjectMember existingMember = TestMockObjectUtil.projectMember(
+                ProjectRole.TESTER,
+                TestMockObjectUtil.getUser(125L, "existing@mail.com", UserRole.NONADMIN)
+        );
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember, existingMember);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(TestMockObjectUtil.getUser()));
+
+        // Act
+        List<ProjectMemberDTO> result = projectService.addProjectMember("100", projectMemberDTO);
+
+
+        // Assert
+        assertNotNull(result, "Returned member list should not be null");
+        assertEquals(3, result.size(), "Should contain exactly three project members");
+
+        verify(projectRepository, times(1)).save(any(Project.class));
+        verify(userRepository, times(1)).findById(projectMemberDTO.getUserId());
+        verify(projectRepository).findById(100L);
+        verify(projectPermission).canAddProjectMember(ProjectRole.MANAGER);
+    }
+
+    @Test
+    void addProjectMember_shouldNotSaveProject_whenRequesterIsNotProjectManager() {
+        when(userContext.getUserId()).thenReturn(123L);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.TESTER,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+
+        // Act
+        StandardApiException exception = assertThrows(StandardApiException.class, () -> {
+            projectService.addProjectMember("100", projectMemberDTO);
+        });
+
+        verify(projectRepository, never()).save(any(Project.class));
+    }
+
+    @Test
+    void addProjectMember_shouldNotSaveProject_whenNewMemberRoleIsInvalid() {
+        projectMemberDTO.setProjectRole("invalidRole");
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.TESTER,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember);
+
+
+        // Act
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.addProjectMember("100", projectMemberDTO);
+        });
+
+        verify(projectRepository, never()).save(any(Project.class));
+    }
+
+    @Test
+    void addProjectMember_shouldNotSaveProject_whenNewMemberIdIsInvalid() {
+        when(projectPermission.canAddProjectMember(any())).thenReturn(true);
+        when(userContext.getUserId()).thenReturn(123L);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.MANAGER,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Act
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.addProjectMember("100", projectMemberDTO);
+        });
+
+        verify(projectRepository, never()).save(any(Project.class));
+    }
+
+    @Test
+    void addProjectMember_shouldNotSaveProject_whenProjectIdIsInvalid() {
+
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Act
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.addProjectMember("10191", projectMemberDTO);
+        });
+
+        verify(projectRepository, never()).save(any(Project.class));
     }
 }
