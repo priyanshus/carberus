@@ -3,6 +3,7 @@ package com.cb.carberus.project.controller;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.ProjectMemberDTO;
+import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -77,6 +78,26 @@ public class ProjectController {
         ProjectDTO projectDTO = projectService.addProject(addProjectDTO);
         return ResponseEntity.ok(projectDTO);
     }
+
+
+    @Operation(
+            summary = "Update a project",
+            description = "Returns project data",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Projects updated",
+                            content = @Content(schema = @Schema(implementation = ProjectDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid Input",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @PatchMapping("{projectId}")
+    public ResponseEntity<ProjectDTO> patchProject(@PathVariable String projectId, @Valid @RequestBody UpdateProjectDTO dto) {
+        ProjectDTO projectDTO = projectService.updateProject(projectId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(projectDTO);
+    }
+
 
 
     @GetMapping("{projectId}/members")

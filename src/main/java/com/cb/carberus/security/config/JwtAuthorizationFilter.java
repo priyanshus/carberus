@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,13 +51,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String token = null;
-        String path = request.getServletPath();
 
-        if (path.equals("/") || path.equals("/login") || path.equals("/signup") ||
-                path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+        if (checkForOpenPaths(request)) {
             filterChain.doFilter(request, response);
             return;
         }
+
         token = extractToken(request);
         if (token == null || token.isEmpty()) {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
@@ -109,5 +109,20 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    private boolean checkForOpenPaths(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        if (path.equals("/api/v1/login") ||
+                path.equals("/api/v1/signup") ||
+                path.startsWith("/api/v1/swagger-ui") ||
+                path.startsWith("/api/v1/v3/api-docs")) {
+
+            log.info("Allowed path: {}", path);
+            return true;
+        }
+
+        return false;
     }
 }

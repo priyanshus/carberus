@@ -12,9 +12,11 @@ import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.ProjectMemberDTO;
+import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.mapper.ProjectMapper;
 import com.cb.carberus.project.model.Project;
 import com.cb.carberus.project.model.ProjectMember;
+import com.cb.carberus.project.model.ProjectStatus;
 import com.cb.carberus.project.repository.ProjectRepository;
 import com.cb.carberus.user.model.User;
 import com.cb.carberus.user.repository.UserRepository;
@@ -100,12 +102,52 @@ public class ProjectService {
 
             Project project = ProjectMapper.INSTANCE.toProject(addProjectDTO);
             project.setCreatedBy(userContext.getUser());
+
             Project savedProject = projectRepository.save(project);
             log.info("Added Project: {}", savedProject.getName());
             return ProjectMapper.INSTANCE.toProjectDTO(savedProject);
         }
 
         log.info("Failed to add Project as {} is unauthorized", getCurrentRole());
+        throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
+    }
+
+    public ProjectDTO updateProject(String projectId, UpdateProjectDTO updateProjectDTO) {
+        Long id = Long.parseLong(projectId);
+
+        if (adminPermission.canAdd(getCurrentRole())) {
+            ProjectStatus status = parseProjectStatusOrThrow(updateProjectDTO.getStatus());
+            Optional<Project> projectInDb = projectRepository.findById(id);
+
+            boolean isProjectPresent = projectInDb.isPresent();
+
+            if (!isProjectPresent) {
+                throw new DomainException(DomainErrorCode.PROJECT_NOT_FOUND);
+            }
+
+            Project projectToBeUpdated = projectInDb.get();
+
+            if (updateProjectDTO.getStatus() != null) {
+                projectToBeUpdated.setStatus(status);
+            }
+
+            if (updateProjectDTO.getDescription() != null) {
+                projectToBeUpdated.setDescription(updateProjectDTO.getDescription());
+            }
+
+            if (updateProjectDTO.getName() != null) {
+                projectToBeUpdated.setName(updateProjectDTO.getName());
+            }
+
+            projectToBeUpdated.setUpdatedAt(LocalDateTime.now());
+            projectRepository.save(projectToBeUpdated);
+
+            log.info("Updated Project: {}", projectToBeUpdated.getName());
+
+            return ProjectMapper.INSTANCE.toProjectDTO(projectToBeUpdated);
+        }
+
+        log.info("Failed to update Project as userId {} is not authorized", getUserId());
         throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
     }
 
@@ -187,6 +229,14 @@ public class ProjectService {
         }
     }
 
+    private ProjectStatus parseProjectStatusOrThrow(String status) {
+        try {
+            return ProjectStatus.valueOf(status.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new DomainException(DomainErrorCode.INVALID_PROJECT_STATUS);
+        }
+    }
+
     private Project findProjectByIdOrElseThrow(String projectId) {
         return projectRepository.findById(Long.parseLong(projectId))
                 .orElseThrow(() -> new DomainException(DomainErrorCode.PROJECT_NOT_FOUND));
@@ -198,7 +248,6 @@ public class ProjectService {
     }
 
     private boolean checkRequesterRoleInProjectOrElseThrow(Project project, Long requesterId) {
-        log.info("Im here to verify the permission");
         Optional<ProjectMember> projectMember = findMemberInProject(project, requesterId);
 
         if (projectMember.isEmpty() ||
@@ -211,7 +260,6 @@ public class ProjectService {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
-        log.info("Do have permission");
         return true;
     }
 

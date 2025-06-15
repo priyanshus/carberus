@@ -4,11 +4,14 @@ import com.cb.carberus.auth.service.AuthUserDetailsService;
 import com.cb.carberus.config.CustomUserDetails;
 import com.cb.carberus.config.UserContext;
 import com.cb.carberus.errorHandler.error.DomainException;
+import com.cb.carberus.errorHandler.error.StandardApiException;
 import com.cb.carberus.errorHandler.model.DomainErrorCode;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.controller.ProjectController;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.ProjectMemberDTO;
+import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.repository.ProjectRepository;
 import com.cb.carberus.project.service.ProjectService;
 import com.cb.carberus.security.config.JwtAuthorizationFilter;
@@ -24,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -209,6 +213,66 @@ public class ProjectControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.[0].userId").value("1"));
+    }
+
+    @Test
+    void PATCH_updateProject_shouldSuccess() throws Exception {
+        ProjectDTO projectDTO = ProjectDTO.builder()
+                .name("updated")
+                .build();
+
+
+        UpdateProjectDTO dto = UpdateProjectDTO
+                .builder()
+                .description("changed-desc")
+                .name("updated")
+                .status("archived")
+                .build();
+
+        when(projectService.updateProject(anyString(), any(UpdateProjectDTO.class)))
+                .thenReturn(projectDTO);
+
+        mockMvc.perform(patch("/api/v1/projects/123")
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("updated"));
+    }
+
+    @Test
+    void PATCH_updateProject_shouldReturnErrorUnauthorized() throws Exception {
+        UpdateProjectDTO dto = UpdateProjectDTO
+                .builder()
+                .description("changed-desc")
+                .name("updated")
+                .status("archived")
+                .build();
+
+        when(projectService.updateProject(anyString(), any(UpdateProjectDTO.class)))
+                .thenThrow(new StandardApiException(StandardErrorCode.UNAUTHORIZED));
+
+        mockMvc.perform(patch("/api/v1/projects/123")
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void PATCH_updateProject_shouldReturnErrorForInvalidInput() throws Exception {
+        UpdateProjectDTO dto = UpdateProjectDTO
+                .builder()
+                .description("changed-desc")
+                .name("updated")
+                .status("archived")
+                .build();
+
+        when(projectService.updateProject(anyString(), any(UpdateProjectDTO.class)))
+                .thenThrow(new DomainException(DomainErrorCode.INVALID_PROJECT_STATUS));
+
+        mockMvc.perform(patch("/api/v1/projects/123")
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 
 }

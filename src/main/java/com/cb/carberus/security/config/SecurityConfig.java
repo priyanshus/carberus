@@ -27,12 +27,15 @@ public class SecurityConfig {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(httpRequest -> {
                     httpRequest.requestMatchers("/").permitAll();
-                    httpRequest.requestMatchers("/login").permitAll();
-                    httpRequest.requestMatchers("/signup").permitAll();
+                    httpRequest.requestMatchers("/api/v1/login").permitAll();
+                    httpRequest.requestMatchers("/api/v1/signup").permitAll();
                     httpRequest.requestMatchers("/swagger-ui/**").permitAll();
                     httpRequest.requestMatchers("/v3/api-docs/**").permitAll();
+
+
                     httpRequest.requestMatchers("/api/v1/**").authenticated();
 
+                    // Fallback protection
                     httpRequest.anyRequest().authenticated();
                 })
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))

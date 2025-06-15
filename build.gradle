@@ -130,7 +130,8 @@ jacocoTestReport {
 	classDirectories.setFrom(
 			fileTree(dir: "$buildDir/classes/java/main", excludes: [
 					'**/dto/**',
-					'**/config/**'
+					'**/config/**',
+					'**/model/**'
 			])
 	)
 	sourceDirectories.setFrom(files('src/main/java'))

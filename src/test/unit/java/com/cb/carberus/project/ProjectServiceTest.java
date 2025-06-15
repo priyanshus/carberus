@@ -7,9 +7,12 @@ import com.cb.carberus.constants.ProjectRole;
 import com.cb.carberus.constants.UserRole;
 import com.cb.carberus.errorHandler.error.DomainException;
 import com.cb.carberus.errorHandler.error.StandardApiException;
+import com.cb.carberus.errorHandler.model.DomainErrorCode;
+import com.cb.carberus.errorHandler.model.StandardErrorCode;
 import com.cb.carberus.project.dto.AddProjectDTO;
 import com.cb.carberus.project.dto.ProjectDTO;
 import com.cb.carberus.project.dto.ProjectMemberDTO;
+import com.cb.carberus.project.dto.UpdateProjectDTO;
 import com.cb.carberus.project.model.Project;
 import com.cb.carberus.project.model.ProjectMember;
 import com.cb.carberus.project.model.ProjectStatus;
@@ -461,4 +464,95 @@ public class ProjectServiceTest {
         });
     }
 
+    @Test
+    void updateProject_ShouldUpdateProject_WhenUserIsAdmin() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
+                .thenReturn(true);
+
+        when(projectRepository.findById(anyLong()))
+                .thenReturn(Optional.of(existingProject));
+
+        UpdateProjectDTO updateProjectDTO = UpdateProjectDTO
+                .builder()
+                .name("updated")
+                .status("arCHIVED")
+                .build();
+
+        ProjectDTO projectDTO = projectService.updateProject("123", updateProjectDTO);
+
+        // Assert
+        verify(projectRepository, times(1)).save(any(Project.class));
+        assertEquals("updated", projectDTO.getName());
+        assertEquals("ARCHIVED", projectDTO.getStatus());
+        assertEquals("some-desc", projectDTO.getDescription());
+    }
+
+    @Test
+    void updateProject_ShouldNotUpdateProject_WhenUserIsNonAdmin() {
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        when(adminPermission.canAdd(any()))
+                .thenReturn(false);
+
+        UpdateProjectDTO updateProjectDTO = UpdateProjectDTO
+                .builder()
+                .name("updated")
+                .description("updated-desc")
+                .status("ARCHIVED")
+                .build();
+
+        StandardApiException exception = assertThrows(StandardApiException.class, () -> {
+            projectService.updateProject("123", updateProjectDTO);
+        });
+
+        // Assert
+        assertEquals(exception.getErrorCode(), StandardErrorCode.UNAUTHORIZED);
+        verify(projectRepository, times(0)).save(any(Project.class));
+    }
+
+
+    @Test
+    void updateProject_ShouldNotUpdateProject_WhenStatusIsInvalid() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
+                .thenReturn(true);
+
+        UpdateProjectDTO updateProjectDTO = UpdateProjectDTO
+                .builder()
+                .name("updated")
+                .status("invalid")
+                .build();
+
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.updateProject("123", updateProjectDTO);
+        });
+
+        // Assert
+        assertEquals(exception.getErrorCode(), DomainErrorCode.INVALID_PROJECT_STATUS);
+        verify(projectRepository, times(0)).save(any(Project.class));
+    }
+
+    @Test
+    void updateProject_ShouldFail_whenProjectIsNotFound() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(adminPermission.canAdd(any()))
+                .thenReturn(true);
+
+        when(projectRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        UpdateProjectDTO updateProjectDTO = UpdateProjectDTO
+                .builder()
+                .name("updated")
+                .status("archived")
+                .build();
+
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.updateProject("123", updateProjectDTO);
+        });
+
+        // Assert
+        assertEquals(exception.getErrorCode(), DomainErrorCode.PROJECT_NOT_FOUND);
+        verify(projectRepository, times(0)).save(any(Project.class));
+    }
 }
