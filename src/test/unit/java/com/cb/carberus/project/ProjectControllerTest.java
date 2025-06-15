@@ -25,8 +25,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,7 +62,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects())
                 .thenReturn(List.of(ProjectDTO.builder().build()));
 
-        mockMvc.perform(get("/projects"))
+        mockMvc.perform(get("/api/v1/projects"))
                 .andExpect(status().isOk());
     }
 
@@ -72,7 +71,7 @@ public class ProjectControllerTest {
         when(projectService.getProject("123"))
                 .thenReturn(ProjectDTO.builder().build());
 
-        mockMvc.perform(get("/projects/1234"))
+        mockMvc.perform(get("/api/v1/projects/1234"))
                 .andExpect(status().isOk());
     }
 
@@ -81,7 +80,7 @@ public class ProjectControllerTest {
         when(projectService.getProject(any(String.class)))
                 .thenThrow(new DomainException(DomainErrorCode.PROJECT_NOT_FOUND));
 
-        mockMvc.perform(get("/projects/1234"))
+        mockMvc.perform(get("/api/v1/projects/1234"))
                 .andExpect(status().isNotFound());
     }
 
@@ -97,7 +96,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects())
                 .thenReturn(List.of(ProjectDTO.builder().build()));
 
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/v1/projects")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addProjectDTO)))
                 .andExpect(status().isOk());
@@ -114,7 +113,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects())
                 .thenReturn(List.of(ProjectDTO.builder().build()));
 
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/v1//projects")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addProjectDTO)))
                 .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
@@ -132,7 +131,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects())
                 .thenReturn(List.of(ProjectDTO.builder().build()));
 
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/v1/projects")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addProjectDTO)))
                 .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
@@ -151,7 +150,7 @@ public class ProjectControllerTest {
         when(projectService.getProjectMembers(any(String.class)))
                 .thenReturn(List.of(projectMemberDTO));
 
-        mockMvc.perform(get("/projects/1/members"))
+        mockMvc.perform(get("/api/v1/projects/1/members"))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.[0].email").value("some@mail.com"));
     }
@@ -186,7 +185,26 @@ public class ProjectControllerTest {
                 .thenReturn(List.of(projectMemberDTO));
 
 
-        mockMvc.perform(post("/projects/123/members")
+        mockMvc.perform(post("/api/v1/projects/123/members")
+                        .content(new ObjectMapper().writeValueAsString(projectMemberDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.[0].userId").value("1"));
+    }
+
+    @Test
+    void PATCH_updateRole_shouldSuccess_whenUserIsSystemAdmin() throws Exception {
+        ProjectMemberDTO projectMemberDTO = ProjectMemberDTO.builder()
+                .userId(1L)
+                .projectRole("tester")
+                .build();
+
+
+        when(projectService.updateProjectMemberRole("123", projectMemberDTO))
+                .thenReturn(List.of(projectMemberDTO));
+
+
+        mockMvc.perform(patch("/api/v1/projects/123/members")
                         .content(new ObjectMapper().writeValueAsString(projectMemberDTO))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())

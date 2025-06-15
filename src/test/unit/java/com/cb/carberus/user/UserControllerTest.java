@@ -90,7 +90,7 @@ public class UserControllerTest {
     void shouldSuccess_When_MeEndpointCalled() throws Exception {
         Mockito.when(userService.getCurrentUser()).thenReturn(userDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/me"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/me"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("a@a.com"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1233"));
@@ -102,7 +102,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.getUsers()).thenReturn(List.of(userDTO));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/users")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users")
                         .cookie(new Cookie("token", jwtToken)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1))
@@ -117,7 +117,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.getUser(userId)).thenReturn(userDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/users/%s", userId))
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/api/v1/users/%s", userId))
                         .cookie(new Cookie("token", jwtToken)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1233"))
@@ -136,7 +136,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO))
                         .cookie(new Cookie("token", jwtToken)))
@@ -157,7 +157,7 @@ public class UserControllerTest {
         Mockito.doThrow(new UserAlreadyExistException())
                 .when(userService).addUser(ArgumentMatchers.any(AddUserDTO.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
@@ -173,7 +173,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
@@ -189,7 +189,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.addUser(addUserDTO)).thenReturn(userDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
@@ -205,7 +205,7 @@ public class UserControllerTest {
         Mockito.doThrow(new UserAlreadyExistException())
                 .when(userService).addUser(ArgumentMatchers.any(AddUserDTO.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(addUserDTO)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
@@ -217,7 +217,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.deleteUser(userId)).thenReturn(true);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/users/%s", userId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/v1/users/%s", userId))
                         .cookie(new Cookie("token", jwtToken)))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
     }
@@ -228,7 +228,7 @@ public class UserControllerTest {
 
         Mockito.doThrow(UserNotFoundException.class).when(userService).deleteUser(ArgumentMatchers.any(String.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/users/%s", userId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(String.format("/api/v1/users/%s", userId))
                         .cookie(new Cookie("token", jwtToken)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
@@ -250,11 +250,11 @@ public class UserControllerTest {
         int userId = 12;
 
         UpdateUserRoleDTO dto = new UpdateUserRoleDTO();
-        dto.setUserRole(UserRole.VIEWER);
+        dto.setUserRole(UserRole.NONADMIN);
 
         Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
 
-        mockMvc.perform(MockMvcRequestBuilders.put(String.format("/users/%d", userId))
+        mockMvc.perform(MockMvcRequestBuilders.put(String.format("/api/v1/users/%d", userId))
                         .cookie(new Cookie("token", jwtToken))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(new ObjectMapper().writeValueAsString(dto)))

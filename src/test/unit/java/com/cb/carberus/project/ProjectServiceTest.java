@@ -85,26 +85,44 @@ public class ProjectServiceTest {
 
 
     @Test
-    void getProjects_ShouldBringAllProjects() {
-        Project project = new Project();
-        project.setName("some-project");
-        project.setDescription("some-desc");
+    void getProjects_ShouldBringAllProjects_whenUserIsSystemAdmin() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
 
         when(projectRepository.findAll()).thenReturn(
-                List.of(project)
+                TestMockObjectUtil.getProjects()
         );
 
         // Act
         List<ProjectDTO> projectDTOList = projectService.getAllProjects();
 
         // Assert
-        Assertions.assertEquals(1, projectDTOList.size());
-        Assertions.assertEquals("some-project", projectDTOList.getFirst().getName());
+        Assertions.assertEquals(2, projectDTOList.size());
+        Assertions.assertEquals("project-name1", projectDTOList.getFirst().getName());
+        Assertions.assertEquals("project-name2", projectDTOList.get(1).getName());
+
+    }
+
+    @Test
+    void getProjects_ShouldBringAllProjects_whenUserIsNonAdmin() {
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        when(projectRepository.findByMembers_User_Id(anyLong())).thenReturn(
+                TestMockObjectUtil.getProjects()
+        );
+
+        // Act
+        List<ProjectDTO> projectDTOList = projectService.getAllProjects();
+
+        // Assert
+        Assertions.assertEquals(2, projectDTOList.size());
+        Assertions.assertEquals("project-name1", projectDTOList.getFirst().getName());
+        Assertions.assertEquals("project-name2", projectDTOList.get(1).getName());
+        verify(projectRepository, times(1)).findByMembers_User_Id(anyLong());
     }
 
     @Test
     void getProjects_ShouldBringNoProjectsWhenThereIsNoProjectInDB() {
-        when(projectRepository.findAll()).thenReturn(List.of());
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
 
         // Act
         List<ProjectDTO> projectDTOList = projectService.getAllProjects();
@@ -385,4 +403,62 @@ public class ProjectServiceTest {
 
         verify(projectRepository, never()).save(any(Project.class));
     }
+
+    @Test
+    void patchProjectMember_shouldUpdateProjectRole_whenMemberAlreadyExist() {
+        projectMemberDTO.setUserId(125L);
+        projectMemberDTO.setProjectRole("admin");
+        when(projectPermission.canAddProjectMember(any())).thenReturn(true);
+        when(userContext.getUserId()).thenReturn(123L);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+
+        ProjectMember adminMember = TestMockObjectUtil.projectMember(
+                ProjectRole.ADMIN,
+                TestMockObjectUtil.getUser(123L, "requester@mail.com", UserRole.NONADMIN)
+        );
+
+        ProjectMember existingMember = TestMockObjectUtil.projectMember(
+                ProjectRole.TESTER,
+                TestMockObjectUtil.getUser(125L, "existing@mail.com", UserRole.NONADMIN)
+        );
+
+        Project project = TestMockObjectUtil.getProjectWithMembers(adminMember, existingMember);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(TestMockObjectUtil.getUser()));
+
+        // Act
+        List<ProjectMemberDTO> result = projectService.updateProjectMemberRole("100", projectMemberDTO);
+
+
+        // Assert
+        assertNotNull(result, "Returned member list should not be null");
+        assertEquals(2, result.size(), "Should contain exactly three project members");
+
+        Optional<ProjectMemberDTO> response = result.stream()
+                .filter(m -> m.getUserId().equals(125L))
+                .findFirst();
+
+        assertTrue(response.isPresent());
+        assertEquals("ADMIN", response.get().getProjectRole());
+
+        verify(projectRepository, times(1)).save(any(Project.class));
+        verify(userRepository, times(1)).findById(projectMemberDTO.getUserId());
+        verify(projectRepository).findById(100L);
+        verify(projectPermission).canAddProjectMember(ProjectRole.ADMIN);
+    }
+
+    @Test
+    void patchProjectMember_shouldThrowException_whenMemberDoesNotExist() {
+        projectMemberDTO.setUserId(126L);
+        projectMemberDTO.setProjectRole("admin");
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(TestMockObjectUtil.getProjectWithMember()));
+        // Act
+        DomainException exception = assertThrows(DomainException.class, () -> {
+            projectService.updateProjectMemberRole("100", projectMemberDTO);
+        });
+    }
+
 }

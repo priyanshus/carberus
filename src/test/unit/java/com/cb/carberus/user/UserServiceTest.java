@@ -23,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.when;
+
 
 public class UserServiceTest {
     @Mock
@@ -48,7 +50,7 @@ public class UserServiceTest {
         user.setId(1L);
         user.setEmail("test@example.com");
 
-        Mockito.when(userRepository.findById(1L))
+        when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
 
         UserDTO result = userService.getUser("1");
@@ -58,26 +60,26 @@ public class UserServiceTest {
 
     @Test
     void testGetUser_notFound() {
-        Mockito.when(userRepository.findById("1")).thenReturn(Optional.empty());
+        when(userRepository.findById("1")).thenReturn(Optional.empty());
         Assertions.assertThrows(UserNotFoundException.class, () -> userService.getUser("1"));
     }
 
     @Test
     void testGetCurrentUser_success() {
         UserDetails userDetails = Mockito.mock(UserDetails.class);
-        Mockito.when(userDetails.getUsername()).thenReturn("test@example.com");
+        when(userDetails.getUsername()).thenReturn("test@example.com");
 
         Authentication auth = Mockito.mock(Authentication.class);
-        Mockito.when(auth.getPrincipal()).thenReturn(userDetails);
+        when(auth.getPrincipal()).thenReturn(userDetails);
 
         SecurityContext context = Mockito.mock(SecurityContext.class);
-        Mockito.when(context.getAuthentication()).thenReturn(auth);
+        when(context.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(context);
 
         User user = new User();
         user.setEmail("test@example.com");
 
-        Mockito.when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
         UserDTO result = userService.getCurrentUser();
         Assertions.assertEquals("test@example.com", result.getEmail());
@@ -88,7 +90,7 @@ public class UserServiceTest {
         User user = new User();
         user.setEmail("u@example.com");
 
-        Mockito.when(userRepository.findAll()).thenReturn(List.of(user));
+        when(userRepository.findAll()).thenReturn(List.of(user));
 
         List<UserDTO> result = userService.getUsers();
         Assertions.assertEquals(1, result.size());
@@ -96,18 +98,19 @@ public class UserServiceTest {
 
     @Test
     void testGetUsers_empty() {
-        Mockito.when(userRepository.findAll()).thenReturn(List.of());
+        when(userRepository.findAll()).thenReturn(List.of());
         Assertions.assertThrows(DomainException.class, () -> userService.getUsers());
     }
 
     @Test
     void testAddUser_success() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
         AddUserDTO dto = new AddUserDTO();
         dto.setEmail("new@example.com");
         dto.setPassword("password");
 
-        Mockito.when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        Mockito.when(encoder.encode("password")).thenReturn("hashed");
+        when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(encoder.encode("password")).thenReturn("hashed");
 
         userService.addUser(dto);
         Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
@@ -115,10 +118,11 @@ public class UserServiceTest {
 
     @Test
     void testAddUser_duplicateEmail() {
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
         AddUserDTO dto = new AddUserDTO();
         dto.setEmail("existing@example.com");
 
-        Mockito.when(userRepository.findByEmail("existing@example.com")).thenReturn(Optional.of(new User()));
+        when(userRepository.findByEmail("existing@example.com")).thenReturn(Optional.of(new User()));
 
         Assertions.assertThrows(DomainException.class, () -> userService.addUser(dto));
     }
@@ -128,8 +132,8 @@ public class UserServiceTest {
         User user = new User();
         user.setId(1L);
 
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(userRepository.findById("1")).thenReturn(Optional.of(user));
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
 
         boolean result = userService.deleteUser("1");
 
@@ -139,7 +143,7 @@ public class UserServiceTest {
 
     @Test
     void testDeleteUser_notAdmin() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
         Assertions.assertThrows(StandardApiException.class, () -> userService.deleteUser("1"));
     }
 
@@ -148,8 +152,8 @@ public class UserServiceTest {
         User user = new User();
         user.setId(1L);
 
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.ADMIN);
-        Mockito.when(userRepository.findById("1")).thenReturn(Optional.of(user));
+        when(userContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
 
         userService.updateUserRole("1", UserRole.ADMIN);
         Mockito.verify(userRepository).save(user);
@@ -157,7 +161,7 @@ public class UserServiceTest {
 
     @Test
     void testUpdateUserRole_notAdmin() {
-        Mockito.when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
+        when(userContext.getRole()).thenReturn(UserRole.NONADMIN);
         Assertions.assertThrows(StandardApiException.class, () -> userService.updateUserRole("1", UserRole.ADMIN));
     }
 }

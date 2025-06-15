@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ProjectRepository extends CrudRepository<Project, Long> {
     Optional<Project> findByName(String name);
     Optional<Project> findByProjectCode(String projectCode);
+    List<Project> findByMembers_User_Id(Long userId);
 }

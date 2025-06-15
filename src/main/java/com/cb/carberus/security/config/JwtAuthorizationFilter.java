@@ -38,7 +38,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public JwtAuthorizationFilter( AuthUserDetailsService userDetailsService, UserContext userContext, JwtUtil jwtUtil) {
+    public JwtAuthorizationFilter(AuthUserDetailsService userDetailsService, UserContext userContext, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.userContext = userContext;
         this.jwtUtil = jwtUtil;
@@ -52,7 +52,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String token = null;
         String path = request.getServletPath();
 
-        if (path.equals("/") || path.equals("/login") || path.equals("/signup")) {
+        if (path.equals("/") || path.equals("/login") || path.equals("/signup") ||
+                path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -61,7 +62,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
         }
 
-        Map<String, Object> decodeJwt  = jwtUtil.validateToken(token);
+        Map<String, Object> decodeJwt = jwtUtil.validateToken(token);
         String email = decodeJwt.get("subject").toString();
 
         CustomUserDetails userDetails = userDetailsService.loadUserByUsername(email);

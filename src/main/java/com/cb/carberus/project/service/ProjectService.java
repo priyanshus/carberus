@@ -58,7 +58,13 @@ public class ProjectService {
 
     public List<ProjectDTO> getAllProjects() {
         log.info("Get All Projects");
-        Iterable<Project> projects = projectRepository.findAll();
+        Iterable<Project> projects;
+
+        if(getCurrentRole().equals(UserRole.ADMIN)) {
+            projects = projectRepository.findAll();
+        }else {
+            projects = projectRepository.findByMembers_User_Id(userContext.getUserId());
+        }
 
         List<Project> projectList = StreamSupport.stream(projects.spliterator(), false).toList();
 
@@ -126,13 +132,7 @@ public class ProjectService {
         User user = findUserOrElseThrow(dto.getUserId());
         Optional<ProjectMember> existingMember = findMemberInProject(project, dto.getUserId());
 
-        if (existingMember.isPresent()) {
-            ProjectMember member = existingMember.get();
-            if (!member.getProjectRole().equals(requestedRole)) {
-                member.setProjectRole(requestedRole);
-                member.setUpdatedAt(LocalDateTime.now());
-            }
-        } else {
+        if (existingMember.isEmpty()) {
             ProjectMember newMember = new ProjectMember();
             newMember.setProject(project);
             newMember.setUser(user);
@@ -140,6 +140,37 @@ public class ProjectService {
             newMember.setAddedAt(LocalDateTime.now());
             newMember.setUpdatedAt(LocalDateTime.now());
             project.getMembers().add(newMember);
+        }
+
+         projectRepository.save(project);
+        return project.getMembers().stream()
+                .map(ProjectMapper.INSTANCE::toProjectMemberDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProjectMemberDTO> updateProjectMemberRole(String projectId, ProjectMemberDTO dto) {
+        ProjectRole requestedRole = parseProjectRole(dto.getProjectRole());
+        Project project = findProjectByIdOrElseThrow(projectId);
+
+        boolean canAddProjectMember = getCurrentRole().equals(UserRole.ADMIN) ||
+                checkRequesterRoleInProjectOrElseThrow(project, userContext.getUserId());
+
+        if (!canAddProjectMember) {
+            throw new StandardApiException(StandardErrorCode.UNAUTHORIZED);
+        }
+
+        User user = findUserOrElseThrow(dto.getUserId());
+        Optional<ProjectMember> existingMember = findMemberInProject(project, dto.getUserId());
+
+        if (existingMember.isPresent()) {
+            ProjectMember member = existingMember.get();
+            if (!member.getProjectRole().equals(requestedRole)) {
+                member.setProjectRole(requestedRole);
+                member.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+        else {
+           throw new DomainException(DomainErrorCode.PROJECT_MEMBER_NOT_FOUND);
         }
 
         projectRepository.save(project);

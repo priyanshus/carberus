@@ -29,7 +29,10 @@ public class SecurityConfig {
                     httpRequest.requestMatchers("/").permitAll();
                     httpRequest.requestMatchers("/login").permitAll();
                     httpRequest.requestMatchers("/signup").permitAll();
+                    httpRequest.requestMatchers("/swagger-ui/**").permitAll();
+                    httpRequest.requestMatchers("/v3/api-docs/**").permitAll();
                     httpRequest.requestMatchers("/api/v1/**").authenticated();
+
                     httpRequest.anyRequest().authenticated();
                 })
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))

@@ -9,6 +9,7 @@ import com.cb.carberus.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TestMockObjectUtil {
     public static User getUser() {
@@ -93,5 +94,40 @@ public class TestMockObjectUtil {
         }
 
         return project;
+    }
+
+    public static List<Project> getProjects() {
+        User creator = getUser(200L, "creator@mail.com", UserRole.ADMIN);
+        ProjectMember member = projectMember(ProjectRole.TESTER, getUser(125L, "projectUser@mail.com", UserRole.NONADMIN));
+
+        Project project1 = new Project();
+        project1.setId(100L);
+        project1.setName("project-name1");
+        project1.setDescription("project-desc");
+        project1.setProjectCode("PRJ1");
+        project1.setStatus(ProjectStatus.ACTIVE);
+        project1.setCreatedBy(creator);
+        project1.setCreatedAt(LocalDateTime.now());
+        project1.setMembers(new ArrayList<>());
+
+        // Wire both sides of the relationship
+        member.setProject(project1);
+        project1.getMembers().add(member);
+
+        Project project2 = new Project();
+        project2.setId(101L);
+        project2.setName("project-name2");
+        project2.setDescription("project-desc");
+        project2.setProjectCode("PRJ1");
+        project2.setStatus(ProjectStatus.ACTIVE);
+        project2.setCreatedBy(creator);
+        project2.setCreatedAt(LocalDateTime.now());
+        project2.setMembers(new ArrayList<>());
+
+        // Wire both sides of the relationship
+        member.setProject(project2);
+        project2.getMembers().add(member);
+
+        return List.of(project1, project2);
     }
 }

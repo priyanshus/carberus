@@ -43,7 +43,7 @@ public class AuthControllerTest {
         Mockito.when(authService.authenticate(ArgumentMatchers.any(LoginRequestDTO.class))).thenReturn(token);
 
         // Act + Assert
-        mockMvc.perform(MockMvcRequestBuilders.post("/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"a@a.com\", \"password\":\"tests\"}"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -58,7 +58,7 @@ public class AuthControllerTest {
         Mockito.when(authService.authenticate(ArgumentMatchers.any(LoginRequestDTO.class))).thenReturn(token);
 
         // Act + Assert
-        mockMvc.perform(MockMvcRequestBuilders.post("/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"a\", \"password\":\"tests\"}"))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
@@ -71,7 +71,7 @@ public class AuthControllerTest {
         Mockito.when(authService.authenticate(ArgumentMatchers.any(LoginRequestDTO.class))).thenReturn(token);
 
         // Act + Assert
-        mockMvc.perform(MockMvcRequestBuilders.post("/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"a@a.com\", \"password\":\"\"}"))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
