@@ -24,7 +24,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Unit Tests & Generate Coverage Report
-        run: ./gradlew clean test jacocoTestReport
+        run: ./gradlew clean unitTests jacocoTestReport
 
       - name: Upload JaCoCo HTML Report
         uses: actions/upload-artifact@v4
